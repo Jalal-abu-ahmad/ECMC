@@ -225,7 +225,7 @@ def run_sim(initial_arr, N, h, rho_H, sim_name, iterations=None, record_displace
 def main():
     local_run = True
     if local_run:
-        sim_name = "N=4_h=0.8_rhoH=0.801_AF_square_ECMC"
+        sim_name = "N=100_h=0.8_rhoH=0.801_AF_square_ECMC"
     else:
         sim_name = sys.argv[1]
     N, h, rhoH, ic = params_from_name(sim_name)
