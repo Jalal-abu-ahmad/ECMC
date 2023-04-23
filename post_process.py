@@ -188,6 +188,7 @@ class OrderParameter:
         realizations.append(0)
 
         while time.time() - init_time < 2 * day and i < len(realizations):
+            print(f"Iteration {i} / {len(realizations)}")
             sp_ind = realizations[i]
             if sp_ind != 0:
                 centers = np.loadtxt(os.path.join(self.sim_path, str(sp_ind)))
@@ -1040,8 +1041,11 @@ class LargestComponent(MagneticTopologicalCorr):
 def main(sim_name, calc_type):
     # TODO: add odd loops removal and histogram
     correlation_kwargs = {'randomize': False, 'time_limit': 2 * day}
-
-    prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+    local = True
+    if local:
+        prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+    else:
+        prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
     sim_path = os.path.join(prefix, sim_name)
     op_dir = os.path.join(sim_path, "OP")
     log = os.path.join(op_dir, "log")

@@ -1,11 +1,8 @@
 #!/Local/ph_daniel/anaconda3/bin/python -u
-import os
 import sys
 from EventChainActions import *
 from SnapShot import WriteOrLoad
-import re
-import time
-from send_parametric_runs import *
+from deploy_simulations_on_HTCondor.send_parametric_runs import *
 
 epsilon = 1e-8
 prefix = '/storage/ph_daniel/danielab/ECMC_simulation_results3.0/'
@@ -226,7 +223,11 @@ def run_sim(initial_arr, N, h, rho_H, sim_name, iterations=None, record_displace
 
 
 def main():
-    sim_name = sys.argv[1]
+    local_run = True
+    if local_run:
+        sim_name = "N=10000_h=0.8_rhoH=0.803_AF_triangle_ECMC"
+    else:
+        sim_name = sys.argv[1]
     N, h, rhoH, ic = params_from_name(sim_name)
     if ic == 'square':
         run_square(h, N, rhoH)

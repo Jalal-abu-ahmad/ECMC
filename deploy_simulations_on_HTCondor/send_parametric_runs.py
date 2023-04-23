@@ -5,8 +5,8 @@ import time
 import re
 import csv
 
-prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
-code_prefix = "/srv01/technion/danielab/OOP_hard_sphere_event_chain/"
+# prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+code_prefix = "./"
 
 
 def sim_name(N, h, rhoH, ic):
@@ -97,6 +97,7 @@ def main():
             runs.append(sim_name(N, h, rhoH, 'square'))
             runs.append(sim_name(N, h, rhoH, 'honeycomb'))
     send_runs_envelope(runs)
+
 
 if __name__ == "__main__":
     main()
