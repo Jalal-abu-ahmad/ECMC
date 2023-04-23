@@ -34,5 +34,15 @@ This is called by `send_parametric_runs.py`
 
 4. `py_env.sh` The script that tells Condor to call `run_functions.py` on each line.
 
+5. `py_quench_env.sh` I think this is a deprecated file that did something useful once.
 
+### simulation_results
+
+The folder where the simulation results are saved, the `run_functions.py` 
+script writes the results here. The `post_process.py` script reads the
+results from here.
+
+### deploy_post_processing_on_simulation_results_on_HTCondor
+
+Same logic as `deploy_simulations_on_HTCondor`
 

@@ -5,7 +5,7 @@ from SnapShot import WriteOrLoad
 from deploy_simulations_on_HTCondor.send_parametric_runs import *
 
 epsilon = 1e-8
-prefix = '/storage/ph_daniel/danielab/ECMC_simulation_results3.0/'
+prefix = './simulation_results/'
 
 
 # prefix = 'C:\\Users\\Daniel Abutbul\\OneDrive - Technion\\simulation-results'
@@ -225,7 +225,7 @@ def run_sim(initial_arr, N, h, rho_H, sim_name, iterations=None, record_displace
 def main():
     local_run = True
     if local_run:
-        sim_name = "N=10000_h=0.8_rhoH=0.803_AF_triangle_ECMC"
+        sim_name = "N=4_h=0.8_rhoH=0.801_AF_square_ECMC"
     else:
         sim_name = sys.argv[1]
     N, h, rhoH, ic = params_from_name(sim_name)

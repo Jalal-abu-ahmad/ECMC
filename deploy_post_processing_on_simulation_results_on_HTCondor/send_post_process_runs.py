@@ -5,8 +5,8 @@ import re
 import csv
 from SnapShot import WriteOrLoad
 
-prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
-code_prefix = "/srv01/technion/danielab/OOP_hard_sphere_event_chain/"
+prefix = "../simulation_results/"
+code_prefix = "./"
 
 
 def params_from_name(name):
@@ -54,8 +54,9 @@ def main():
         writer = csv.writer(f, lineterminator='\n')
         for sim_name in sims:
             N, h, rhoH, ic = params_from_name(sim_name)
-            if h == 0.8 and 0.7 <= rhoH <= 0.9 and N == 90000 and ic == 'square':
-                writer.writerow((sim_name, "Ising-annealing14"))
+            # comment this out to run post_process on all files in simulation results
+            # if h == 0.8 and 0.7 <= rhoH <= 0.9 and N == 90000 and ic == 'square':
+            writer.writerow((sim_name, "Ising-annealing14"))
 
             # for calc_type in ["psi", "psi_mean", "Bragg_S", "Bragg_Sm", "gM", "Ising-annealing"] + [
             #     "LocalPsi_radius=" + str(rad) + "_" for rad in [10, 30, 50]]:

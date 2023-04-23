@@ -1041,11 +1041,7 @@ class LargestComponent(MagneticTopologicalCorr):
 def main(sim_name, calc_type):
     # TODO: add odd loops removal and histogram
     correlation_kwargs = {'randomize': False, 'time_limit': 2 * day}
-    local = True
-    if local:
-        prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
-    else:
-        prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+    prefix = "./simulation_results/"
     sim_path = os.path.join(prefix, sim_name)
     op_dir = os.path.join(sim_path, "OP")
     log = os.path.join(op_dir, "log")
@@ -1125,4 +1121,11 @@ def main(sim_name, calc_type):
 
 
 if __name__ == "__main__":
-    main(sim_name=sys.argv[1], calc_type=sys.argv[2])
+    local_run = True
+    if local_run:
+        sim_name = "N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC"
+        calc_type = "BurgersSquare23"
+    else:
+        sim_name = sys.argv[1]
+        calc_type = sys.argv[2]
+    main(sim_name=sim_name, calc_type=calc_type)
