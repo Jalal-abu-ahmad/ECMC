@@ -1,7 +1,7 @@
 from scipy.optimize import fmin
-from order_parameter import OrderParameter
-from EventChainActions import *
 
+from EventChainActions import *
+from order_parameter import OrderParameter
 
 epsilon = 1e-8
 day = 86400  # sec

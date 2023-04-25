@@ -1,8 +1,6 @@
-import os
 import sys
 from datetime import date
 
-from EventChainActions import *
 from SnapShot import *
 from bragg_structure import BraggStructure
 from burger_field import BurgerField
