@@ -58,9 +58,9 @@ def main():
             # if h == 0.8 and 0.7 <= rhoH <= 0.9 and N == 90000 and ic == 'square':
             writer.writerow((sim_name, "Ising-annealing14"))
 
-            # for calc_type in ["psi", "psi_mean", "Bragg_S", "Bragg_Sm", "gM", "Ising-annealing"] + [
-            #     "LocalPsi_radius=" + str(rad) + "_" for rad in [10, 30, 50]]:
-            #     writer.writerow((sim_name, calc_type + "14"))
+            for calc_type in ["psi", "psi_mean", "Bragg_S", "Bragg_Sm", "gM", "Ising-annealing"] + [
+                "LocalPsi_radius=" + str(rad) + "_" for rad in [10, 30, 50]]:
+                writer.writerow((sim_name, calc_type + "14"))
     finally:
         f.close()
         os.system("condor_submit post_process.sub")

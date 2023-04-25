@@ -1124,7 +1124,7 @@ if __name__ == "__main__":
     local_run = True
     if local_run:
         sim_name = "N=4_h=0.8_rhoH=0.801_AF_square_ECMC"
-        calc_type = "BurgersSquare23"
+        calc_type = "Ising-annealing14"
     else:
         sim_name = sys.argv[1]
         calc_type = sys.argv[2]
