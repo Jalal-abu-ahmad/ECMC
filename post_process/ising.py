@@ -3,6 +3,7 @@ import time
 
 from SnapShot import *
 from graph import Graph
+from order_parameter import OrderParameter
 
 epsilon = 1e-8
 day = 86400  # sec

@@ -41,7 +41,8 @@ class Graph(OrderParameter):
                             "frustration_" + self.direc_str + "_" + str(self.spheres_ind) + ".txt")
 
     def calc_graph(self):
-        if not os.path.exists(self.graph_father_path): os.mkdir(self.graph_father_path)
+        if not os.path.exists(self.graph_father_path):
+            os.mkdir(self.graph_father_path)
         recalc_graph = True
         if os.path.exists(self.graph_file_path):
             recalc_graph = False

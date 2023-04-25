@@ -102,7 +102,7 @@ def main(sim_name, calc_type):
 if __name__ == "__main__":
     local_run = True
     if local_run:
-        sim_name = "N=4_h=0.8_rhoH=0.801_AF_square_ECMC"
+        sim_name = "N=100_h=0.8_rhoH=0.801_AF_square_ECMC"
         calc_type = "Ising-annealing14"
     else:
         sim_name = sys.argv[1]
