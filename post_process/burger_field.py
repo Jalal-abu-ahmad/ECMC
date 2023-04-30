@@ -2,6 +2,7 @@ from scipy.spatial import Delaunay
 
 from EventChainActions import *
 from order_parameter import OrderParameter
+from local_orientation import LocalOrientation
 
 epsilon = 1e-8
 day = 86400  # sec
@@ -106,11 +107,6 @@ class BurgerField(OrderParameter):
         simplex_points = simplex_points[I]  # calculate burger circuit always anti-clockwise
         if nodes_orientation is not None:
             nodes_orientation = np.array(nodes_orientation)[I]
-
-        def L_ab(x_ab, refference_lattice):
-            i = np.argmin([np.linalg.norm(x_ab - L) for L in refference_lattice])
-            return refference_lattice[i]
-
         Ls = []
         reference_lattice = global_reference_lattice
         for (a, b) in [(0, 1), (1, 2), (2, 0)]:
@@ -118,13 +114,17 @@ class BurgerField(OrderParameter):
                 theta_edge = (nodes_orientation[a] + nodes_orientation[b]) / 2
                 R_edge = BurgerField.rotation_matrix(theta_edge)
                 reference_lattice = [np.matmul(R_edge, p) for p in global_reference_lattice]
-            Ls.append(L_ab(simplex_points[b] - simplex_points[a], reference_lattice))
+            Ls.append(BurgerField.L_ab(simplex_points[b] - simplex_points[a], reference_lattice))
         if nodes_orientation is not None:
             theta_simplex = np.mean(nodes_orientation)
             R_simplex = BurgerField.rotation_matrix(theta_simplex)
             reference_lattice = [np.matmul(R_simplex, p) for p in global_reference_lattice]
-            return L_ab(np.sum(Ls, 0), reference_lattice)
+            return BurgerField.L_ab(np.sum(Ls, 0), reference_lattice)
         return np.sum(Ls, 0)
+
+    def L_ab(x_ab, refference_lattice):
+        i = np.argmin([np.linalg.norm(x_ab - L) for L in refference_lattice])
+        return refference_lattice[i]
 
     @staticmethod
     def wrap_with_boundaries(spheres, boundaries, w, orientation_array=None):

@@ -26,3 +26,28 @@ Correlation arguments:{}
 Calc correlations: False
 Calc mean: False
 Backend MacOSX is interactive backend. Turning interactive mode on.
+Backend MacOSX is interactive backend. Turning interactive mode on.
+Backend MacOSX is interactive backend. Turning interactive mode on.
+
+
+
+-----------
+Date: 2023-04-29
+Type: Ising-annealing14
+Correlation arguments:{}
+Calc correlations: False
+Calc mean: False
+Backend MacOSX is interactive backend. Turning interactive mode on.
+Backend MacOSX is interactive backend. Turning interactive mode on.
+Backend MacOSX is interactive backend. Turning interactive mode on.
+Backend MacOSX is interactive backend. Turning interactive mode on.
+
+
+
+-----------
+Date: 2023-04-29
+Type: BurgersSquare14
+Correlation arguments:{'randomize': False, 'time_limit': 172800}
+Calc correlations: False
+Calc mean: False
+Iteration 0 / 2
