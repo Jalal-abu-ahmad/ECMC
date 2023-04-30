@@ -3,11 +3,10 @@ import os
 import scipy.sparse
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph, radius_neighbors_graph
-
 from EventChainActions import *
 from bragg_structure import BraggStructure
 from order_parameter import OrderParameter
-from psi_mn import PsiMN
+
 
 epsilon = 1e-8
 day = 86400  # sec

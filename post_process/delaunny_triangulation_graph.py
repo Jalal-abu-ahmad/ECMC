@@ -103,3 +103,11 @@ def wrap_with_boundaries(spheres, boundaries, w, orientation_array=None):
 
         wraped_orientation = np.concatenate((sp5, sp1, sp2, sp3, sp4, sp6, sp7, sp8, sp9))
     return wraped_centers, wraped_orientation
+
+
+
+
+
+
+
+
