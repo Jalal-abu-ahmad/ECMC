@@ -51,3 +51,4 @@ Correlation arguments:{'randomize': False, 'time_limit': 172800}
 Calc correlations: False
 Calc mean: False
 Iteration 0 / 2
+Backend MacOSX is interactive backend. Turning interactive mode on.
