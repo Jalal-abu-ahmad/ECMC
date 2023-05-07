@@ -1,3 +1,5 @@
+from scipy.spatial import Delaunay
+import matplotlib as plt
 import utils
 import numpy as np
 
@@ -7,7 +9,7 @@ def demo():
     L = 20  # Size of the square lattice
     N = 100  # Number of points
     noise = 0.1
-    rotation_angle_degree = 10
+    rotation_angle_degree = 90
     rotation_angle = np.deg2rad(rotation_angle_degree)
     rotation_matrix = np.array([
         [np.cos(rotation_angle), np.sin(rotation_angle)],
@@ -24,8 +26,33 @@ def demo():
     # Add some random defects to the lattice
     noise = np.random.normal(0, noise, size=rotated_points.shape)
     rotated_points += noise
+    aligned_points = align_points(rotated_points)
 
-    utils.plot_points_with_no_edges(points=rotated_points)
+
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points,L=L,N=N)
+
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=rotated_points,L=L,N=N)
+
+
+def calculate_rotation_angle(points ,a):
+    tri = Delaunay(points)
+    list_of_angles = []
+    edges = utils.delaunay2edges(tri)
+    utils.filter_diagonal_edges(array_of_edges=edges, a=a, points=points)
+    x_hat = np.array([1, 0])
+    for e in edges:
+        vec = points[e[1]] - points[e[0]]
+        if utils.is_in_pos_x_direction(e, points):
+            list_of_angles.append(utils.calculate_angle_between_two_vectors(vec, x_hat))
+    theta = np.mean(list_of_angles)
+
+    return theta
+
+
+def align_points(points, a):
+    theta = calculate_rotation_angle(points=points, a=a)
+    aligned_points = utils.rotate_points_by_angle(points,theta)
+    return aligned_points
 
 
 def read_from_file():
@@ -34,11 +61,12 @@ def read_from_file():
     rho_H = 0.82
     h=0.8
     L = utils.get_L(N=N, h=h, rho_H=rho_H)
-
+    a = L / (np.sqrt(N) - 1)
     points = utils.read_points_from_file(file_path=file_path)
     assert points.shape == (N, 2)
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=points, N=N, L=L)
+    aligned_points=align_points(points=points, a=a)
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, N=N, L=L)
 
 
 if __name__ == "__main__":
-    demo()
+    read_from_file()

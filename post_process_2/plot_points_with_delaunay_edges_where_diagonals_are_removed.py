@@ -6,7 +6,7 @@ def demo():
     # Generate a square lattice of points
     L = 20  # Size of the square lattice
     N = 100  # Number of points
-    noise = 0.4
+    noise = 0.1
     x = np.linspace(0, L, int(np.sqrt(N)))
     y = np.linspace(0, L, int(np.sqrt(N)))
     xx, yy = np.meshgrid(x, y)

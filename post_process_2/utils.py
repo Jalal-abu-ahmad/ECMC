@@ -15,6 +15,36 @@ def get_closest_vector_in_length(original_vec, list_of_vecs) -> float:
     return minimum_dist
 
 
+def calculate_angle_between_two_vectors(v1, v2):
+    return np.arccos(dot_product(v1,v2)/(vector_length(v1) * vector_length(v2)))
+
+
+def vector_length(v):
+    return np.sqrt(dot_product(v, v))
+
+
+def dot_product(v1, v2):
+    product = sum((a * b) for a, b in zip(v1, v2))  # general n-dimesnsions vector
+    return product
+
+def rotation_matrix(theta):
+    return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+
+def rotate_points_by_angle(points, angle):
+    rotated_points = points @ rotation_matrix(angle)
+    return rotated_points
+
+def is_in_pos_x_direction(edge, points):
+    x=np.array([1,0])
+    y=np.array([0,1])
+    vec = points[edge[1]] - points[edge[0]]
+    x_diff = np.linalg.norm(x - vec)
+    y_diff = np.linalg.norm(y - vec)
+    if x_diff < y_diff:
+        return True
+    return False
+
+
 def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags, points) -> bool:
     vec = points[edge[1]] - points[edge[0]]
     x = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_diags)
@@ -94,10 +124,6 @@ def plot_points_with_no_edges(points):
     plot(points=points, edges_with_colors=[])
 
 
-def rotate_points(points):
-    pass
-
-
 def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N):
     a = L / (np.sqrt(N) - 1)
 
@@ -112,7 +138,6 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N):
     edges_with_colors = []
     for e in array_of_edges:
         edges_with_colors.append((e, "blue"))
-
     plot(points=points, edges_with_colors=edges_with_colors)
 
 
@@ -163,6 +188,7 @@ def get_L(N, h, rho_H):
     assert abs(l_x - l_y) < 0.000000001
     # l_z = (h + 1) * sig
     return l_x
+
 
 
 def read_points_from_file(file_path: str) -> np.ndarray:
