@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
+from sklearn.neighbors import kneighbors_graph
 
 
 def less_first(a, b):
@@ -16,7 +17,7 @@ def get_closest_vector_in_length(original_vec, list_of_vecs) -> float:
 
 
 def calculate_angle_between_two_vectors(v1, v2):
-    return np.arccos(dot_product(v1,v2)/(vector_length(v1) * vector_length(v2)))
+    return np.arccos(dot_product(v1, v2)/(vector_length(v1) * vector_length(v2)))
 
 
 def vector_length(v):
@@ -27,12 +28,24 @@ def dot_product(v1, v2):
     product = sum((a * b) for a, b in zip(v1, v2))  # general n-dimesnsions vector
     return product
 
+
 def rotation_matrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+
 
 def rotate_points_by_angle(points, angle):
     rotated_points = points @ rotation_matrix(angle)
     return rotated_points
+
+
+def cyc_dist(p1, p2, boundaries):
+    dx = np.array(p1) - p2  # direct vector
+    dsq = 0
+    for i in range(2):
+        L = boundaries[i]
+        dsq += min(dx[i] ** 2, (dx[i] + L) ** 2, (dx[i] - L) ** 2)  # find shorter path through B.D.
+    return np.sqrt(dsq)
+
 
 def is_in_pos_x_direction(edge, points):
     x=np.array([1,0])
@@ -67,6 +80,16 @@ def delaunay2edges(tri):
             list_of_edges.append(edge)
     array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
     return array_of_edges
+
+
+def nearest_neighbors_graph(points, l_x, l_y, n_neighbors):
+    cyc = lambda p1, p2: cyc_dist(p1, p2, [l_x, l_y])
+    NNgraph = kneighbors_graph(points, n_neighbors=n_neighbors, metric=cyc)
+    return NNgraph
+
+
+def nearest_neighbors(N, NNgraph):
+    return [[j for j in NNgraph.getrow(i).indices] for i in range(N)]
 
 
 def get_lengths_of_edges(tri, array_of_edges):

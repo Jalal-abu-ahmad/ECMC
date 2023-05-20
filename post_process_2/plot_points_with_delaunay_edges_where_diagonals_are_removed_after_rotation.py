@@ -3,6 +3,8 @@ import matplotlib as plt
 import utils
 import numpy as np
 
+from Structure import Metric
+
 
 def demo():
     # Generate a square lattice of points
@@ -49,6 +51,19 @@ def calculate_rotation_angle(points ,a):
     return theta
 
 
+def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
+    NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
+    psimn_vec = []
+    nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
+    for i in range(len(points)):
+        dr = [Metric.cyclic_vec([l_x, l_y], points[i], points[j]) for j in
+              nearest_neighbors[i]]
+        t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
+        psi_n = np.mean(np.exp(1j * n * t))
+        psimn_vec[i] = np.abs(psi_n) * np.exp(1j * self.m * np.angle(psi_n))
+    return psimn_vec
+
+
 def align_points(points, a):
     theta = calculate_rotation_angle(points=points, a=a)
     aligned_points = utils.rotate_points_by_angle(points,theta)
@@ -66,6 +81,7 @@ def read_from_file():
     assert points.shape == (N, 2)
     aligned_points=align_points(points=points, a=a)
     utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, N=N, L=L)
+
 
 
 if __name__ == "__main__":
