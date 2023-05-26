@@ -8,17 +8,18 @@ from Structure import Metric
 
 def demo():
     # Generate a square lattice of points
-    L = 20  # Size of the square lattice
-    N = 100  # Number of points
-    noise = 0.1
-    rotation_angle_degree = 90
+    L = 200  # Size of the square lattice
+    N = 10000  # Number of points
+    noise = 0
+    rotation_angle_degree = 5
+    boundaries=([L,L])
+    epsilon= L/np.sqrt(N)/2
     rotation_angle = np.deg2rad(rotation_angle_degree)
     rotation_matrix = np.array([
         [np.cos(rotation_angle), np.sin(rotation_angle)],
-        [-np.sin(rotation_angle), np.cos(rotation_angle)],
-    ])
-    x = np.linspace(0, L, int(np.sqrt(N)))
-    y = np.linspace(0, L, int(np.sqrt(N)))
+        [-np.sin(rotation_angle), np.cos(rotation_angle)] ])
+    x = np.linspace(epsilon, L-epsilon, int(np.sqrt(N)))
+    y = np.linspace(epsilon, L-epsilon, int(np.sqrt(N)))
     xx, yy = np.meshgrid(x, y)
     points = np.array([xx.flatten(), yy.flatten()]).T
     rotated_points = points @ rotation_matrix
@@ -28,12 +29,12 @@ def demo():
     # Add some random defects to the lattice
     noise = np.random.normal(0, noise, size=rotated_points.shape)
     rotated_points += noise
-    aligned_points = align_points(rotated_points)
+    # utils.cyc_position_alignment(rotated_points, boundaries)
+    aligned_points = align_points(rotated_points, l_x=L, l_y=L, N=N)
 
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, L=L, N=N)
 
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points,L=L,N=N)
-
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=rotated_points,L=L,N=N)
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=rotated_points, L=L, N=N)
 
 
 def calculate_rotation_angle(points ,a):
@@ -55,18 +56,19 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
     psimn_vec = []
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
-    for i in range(len(points)):
-        dr = [Metric.cyclic_vec([l_x, l_y], points[i], points[j]) for j in
-              nearest_neighbors[i]]
-        t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
-        psi_n = np.mean(np.exp(1j * n * t))
-        psimn_vec[i] = np.abs(psi_n) * np.exp(1j * self.m * np.angle(psi_n))
-    return psimn_vec
+    for i in range(N):
+        dr = [utils.cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
+        t = np.arctan2([np.abs(r[1]) for r in dr], [np.abs(r[0]) for r in dr])
+        psi_n = np.mean(np.exp(1j * 4 * t))
+        psimn_vec.append(np.abs(psi_n) * np.exp(1j * i * np.angle(psi_n)))
+    psi_avg = np.mean(psimn_vec)
+    orientation = np.imag(np.log(psi_avg))/4
+    return orientation
 
 
-def align_points(points, a):
-    theta = calculate_rotation_angle(points=points, a=a)
-    aligned_points = utils.rotate_points_by_angle(points,theta)
+def align_points(points, l_x, l_y, N):
+    theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=l_x, l_y=l_y , N=N)
+    aligned_points = utils.rotate_points_by_angle(points, theta)
     return aligned_points
 
 
@@ -79,10 +81,10 @@ def read_from_file():
     a = L / (np.sqrt(N) - 1)
     points = utils.read_points_from_file(file_path=file_path)
     assert points.shape == (N, 2)
-    aligned_points=align_points(points=points, a=a)
+    aligned_points = align_points(points=points, l_x=L, l_y=L, N=N)
     utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, N=N, L=L)
 
 
-
 if __name__ == "__main__":
+    #demo()
     read_from_file()

@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
@@ -36,6 +37,21 @@ def rotation_matrix(theta):
 def rotate_points_by_angle(points, angle):
     rotated_points = points @ rotation_matrix(angle)
     return rotated_points
+
+
+def cyc_position_alignment(points, boundaries):
+    for p in points:
+        if p[0] > boundaries[0]:
+            p[0] = p[0] - boundaries[0]
+
+        if p[0] < 0:
+            p[0] = p[0] + boundaries[0]
+
+        if p[1] > boundaries[1]:
+             p[1] = p[1] - boundaries[1]
+
+        if p[1] < 0:
+             p[1] = p[1] + boundaries[1]
 
 
 def cyc_dist(p1, p2, boundaries):
@@ -82,6 +98,22 @@ def delaunay2edges(tri):
     return array_of_edges
 
 
+def NN2edges(points, nearest_neighbours, L):
+    list_of_edges = []
+    for p in range(len(nearest_neighbours)):
+        nn_edges = []
+        for n in range(len(nearest_neighbours[p])):
+            edge = (points[p], points[nearest_neighbours[p][n]])
+            if vec_length(edge[0],edge[1]) < L/2:
+                nn_edges.append(edge)
+        list_of_edges.append(nn_edges)
+    return list_of_edges
+
+
+def vec_length(p1,p2):
+    return math.dist(p1,p2)
+
+
 def nearest_neighbors_graph(points, l_x, l_y, n_neighbors):
     cyc = lambda p1, p2: cyc_dist(p1, p2, [l_x, l_y])
     NNgraph = kneighbors_graph(points, n_neighbors=n_neighbors, metric=cyc)
@@ -100,6 +132,20 @@ def get_lengths_of_edges(tri, array_of_edges):
         list_of_lengths.append((x1 - x2) ** 2 + (y1 - y2) ** 2)
     array_of_lengths = np.sqrt(np.array(list_of_lengths))
     return array_of_lengths
+
+
+def cyclic_vec(boundaries, sphere1, sphere2):
+    """
+    :return: vector pointing from sphere2 to sphere1 ("sphere1-sphere2") shortest through cyclic boundaries
+    """
+    dx = np.array(sphere1) - sphere2  # direct vector
+    vec = np.zeros(len(dx))
+    # vec[2] = dx[2]
+    for i in range(2):
+        l = boundaries[i]
+        dxs = np.array([dx[i], dx[i] + l, dx[i] - l])
+        vec[i] = dxs[np.argmin(dxs ** 2)]  # find shorter path through B.D.
+    return vec
 
 
 def filter_diagonal_edges(array_of_edges, a, points):
@@ -164,6 +210,17 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N):
     plot(points=points, edges_with_colors=edges_with_colors)
 
 
+def plot_nn_graph(nn_edges, points):
+    c=len(nn_edges[4])
+    for n in range(len(nn_edges)):
+        for e in range(len(nn_edges[n])):
+            x1, y1 = nn_edges[n][e][0]
+            x2, y2 = nn_edges[n][e][1]
+            plt.plot([x1, x2], [y1, y2],color='blue')
+    plt.scatter(points[:, 0], points[:, 1])
+    plt.show()
+
+
 def plot_points_with_delaunay_edges(points, L, N):
     # Perform Delaunay triangulation
     tri = Delaunay(points)
@@ -211,7 +268,6 @@ def get_L(N, h, rho_H):
     assert abs(l_x - l_y) < 0.000000001
     # l_z = (h + 1) * sig
     return l_x
-
 
 
 def read_points_from_file(file_path: str) -> np.ndarray:
