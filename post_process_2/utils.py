@@ -148,7 +148,7 @@ def cyclic_vec(boundaries, sphere1, sphere2):
     return vec
 
 
-def filter_diagonal_edges(array_of_edges, a, points):
+def filter_diagonal_edges(array_of_edges, a, points, rotation_angel):
     # calculate a vectors
     a1, a2 = np.array([a, 0]), np.array([0, a])
 
@@ -161,16 +161,15 @@ def filter_diagonal_edges(array_of_edges, a, points):
          range(-3, 4)]
     )
 
-    # perfect_lattice_vectors = [n * a1 + m * a2 for n in range(-3, 3) for m in range(-3, 3)]
-    # print("perfect_lattice_vectors_only_diags = ", perfect_lattice_vectors_only_diags)
-    # print("perfect_lattice_vectors_only_no_diags = ", perfect_lattice_vectors_only_no_diags)
+    perfect_lattice_vectors_only_no_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_no_diags, rotation_angel)
+    perfect_lattice_vectors_only_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_diags, rotation_angel)
 
     list_of_edges = []
     iterations = len(array_of_edges)
     for i, edge in enumerate(array_of_edges):
         if (i % 1000) == 0:
             print("filter_edges progress = ", int((i / iterations) * 100), "%")
-        if not is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags, points):
+        if not is_diagonal(edge, perfect_lattice_vectors_only_diags_aligned, perfect_lattice_vectors_only_no_diags_aligned, points):
             list_of_edges.append(edge)
     array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
     return array_of_edges
@@ -180,12 +179,14 @@ def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
 
-def plot(points, edges_with_colors):
+def plot(points, edges_with_colors, burger_vecs):
     for (p1, p2), color in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
         plt.plot([x1, x2], [y1, y2], color=color)
     plt.scatter(points[:, 0], points[:, 1])
+    if burger_vecs is not None:
+        plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3],scale=21)
     plt.show()
 
 
@@ -193,7 +194,7 @@ def plot_points_with_no_edges(points):
     plot(points=points, edges_with_colors=[])
 
 
-def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N):
+def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N, alignment_angel, burger_vecs):
     a = L / (np.sqrt(N) - 1)
 
     # Perform Delaunay triangulation and get edges
@@ -201,13 +202,13 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N):
     edges = delaunay2edges(tri)
 
     # remove edges that are diagonal
-    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points)
+    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel)
 
     # edges
     edges_with_colors = []
     for e in array_of_edges:
         edges_with_colors.append((e, "blue"))
-    plot(points=points, edges_with_colors=edges_with_colors)
+    plot(points=points, edges_with_colors=edges_with_colors, burger_vecs=burger_vecs)
 
 
 def plot_nn_graph(nn_edges, points):

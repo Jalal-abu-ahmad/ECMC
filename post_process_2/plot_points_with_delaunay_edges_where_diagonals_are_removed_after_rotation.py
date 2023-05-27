@@ -74,6 +74,7 @@ def align_points(points, l_x, l_y, N):
 
 def read_from_file():
     file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/84426366"
+    burger_vectors_path="/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/OP/burger_vectors/vec_84426366.txt"
     N = 90000
     rho_H = 0.82
     h=0.8
@@ -81,8 +82,10 @@ def read_from_file():
     a = L / (np.sqrt(N) - 1)
     points = utils.read_points_from_file(file_path=file_path)
     assert points.shape == (N, 2)
-    aligned_points = align_points(points=points, l_x=L, l_y=L, N=N)
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, N=N, L=L)
+    burger_vecs = np.loadtxt(burger_vectors_path)
+    #aligned_points=align_points(points,L,L,N)
+    theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L , N=N)
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=points, N=N, L=L, alignment_angel=-theta, burger_vecs=burger_vecs)
 
 
 if __name__ == "__main__":
