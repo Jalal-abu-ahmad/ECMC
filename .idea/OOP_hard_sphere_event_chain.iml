@@ -3,7 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$/../tests_OOP_hard_sphere_event_chain" />
-    <orderEntry type="jdk" jdkName="$USER_HOME$/miniconda3" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

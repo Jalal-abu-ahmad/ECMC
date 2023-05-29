@@ -186,7 +186,7 @@ def plot(points, edges_with_colors, burger_vecs):
         plt.plot([x1, x2], [y1, y2], color=color)
     plt.scatter(points[:, 0], points[:, 1])
     if burger_vecs is not None:
-        plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3],scale=21)
+        plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
     plt.show()
 
 

@@ -24,7 +24,6 @@ def demo():
     points = np.array([xx.flatten(), yy.flatten()]).T
     rotated_points = points @ rotation_matrix
     assert rotated_points.shape == (N, 2)
-    # print(points)
 
     # Add some random defects to the lattice
     noise = np.random.normal(0, noise, size=rotated_points.shape)
@@ -66,15 +65,26 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     return orientation
 
 
-def align_points(points, l_x, l_y, N):
+def align_points(points, l_x, l_y, N,burger_vecs):
     theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=l_x, l_y=l_y , N=N)
     aligned_points = utils.rotate_points_by_angle(points, theta)
-    return aligned_points
+    temp1= utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
+    temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
+    rotated_Burger_vec= np.hstack((temp1, temp2))
+    return aligned_points, rotated_Burger_vec
 
 
 def read_from_file():
-    file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/84426366"
-    burger_vectors_path="/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/OP/burger_vectors/vec_84426366.txt"
+
+    mac = False
+
+    if mac:
+        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/84426366"
+        burger_vectors_path="/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/OP/burger_vectors/vec_84426366.txt"
+    else:
+        file_path="C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
+        burger_vectors_path="C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/OP/burger_vectors/vec_94363239.txt"
+
     N = 90000
     rho_H = 0.82
     h=0.8
@@ -83,9 +93,9 @@ def read_from_file():
     points = utils.read_points_from_file(file_path=file_path)
     assert points.shape == (N, 2)
     burger_vecs = np.loadtxt(burger_vectors_path)
-    #aligned_points=align_points(points,L,L,N)
-    theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L , N=N)
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=points, N=N, L=L, alignment_angel=-theta, burger_vecs=burger_vecs)
+    aligned_points, rotated_Burger_vec = align_points(points,L,L,N,burger_vecs)
+    #theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L , N=N)
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, N=N, L=L, alignment_angel=0, burger_vecs=rotated_Burger_vec)
 
 
 if __name__ == "__main__":
