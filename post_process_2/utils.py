@@ -184,7 +184,11 @@ def plot(points, edges_with_colors, burger_vecs):
         x1, y1 = points[p1]
         x2, y2 = points[p2]
         plt.plot([x1, x2], [y1, y2], color=color)
+
     plt.scatter(points[:, 0], points[:, 1])
+    tri = Delaunay(points)
+    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
+    
     if burger_vecs is not None:
         plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
     plt.show()
