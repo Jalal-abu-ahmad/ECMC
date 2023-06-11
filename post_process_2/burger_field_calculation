@@ -1,0 +1,20 @@
+
+
+
+
+
+
+
+
+
+
+
+
+def L_ab(vec_ab, refference_lattice):
+    i = np.argmin([np.linalg.norm(x_ab - L) for L in refference_lattice])
+    return refference_lattice[i]
+
+
+
+
+

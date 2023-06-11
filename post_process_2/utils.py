@@ -148,17 +148,17 @@ def cyclic_vec(boundaries, sphere1, sphere2):
     return vec
 
 
-def filter_diagonal_edges(array_of_edges, a, points, rotation_angel):
+def filter_diagonal_edges(array_of_edges, a, points, rotation_angel, order):
     # calculate a vectors
     a1, a2 = np.array([a, 0]), np.array([0, a])
 
     # get lattice vectors
     perfect_lattice_vectors_only_diags = filter_none(
-        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-3, 4) for m in range(-3, 4)]
+        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
     )
     perfect_lattice_vectors_only_no_diags = filter_none(
-        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-3, 4) for m in
-         range(-3, 4)]
+        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-order, order+1) for m in
+         range(-order, order+1)]
     )
 
     perfect_lattice_vectors_only_no_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_no_diags, rotation_angel)
@@ -206,7 +206,7 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N, al
     edges = delaunay2edges(tri)
 
     # remove edges that are diagonal
-    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel)
+    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel,order=3)
 
     # edges
     edges_with_colors = []

@@ -40,7 +40,7 @@ def calculate_rotation_angle(points ,a):
     tri = Delaunay(points)
     list_of_angles = []
     edges = utils.delaunay2edges(tri)
-    utils.filter_diagonal_edges(array_of_edges=edges, a=a, points=points)
+    utils.filter_diagonal_edges(array_of_edges=edges, a=a, points=points, order=3)
     x_hat = np.array([1, 0])
     for e in edges:
         vec = points[e[1]] - points[e[0]]
@@ -68,15 +68,17 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
 def align_points(points, l_x, l_y, N,burger_vecs):
     theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=l_x, l_y=l_y , N=N)
     aligned_points = utils.rotate_points_by_angle(points, theta)
-    temp1= utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
-    temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
-    rotated_Burger_vec= np.hstack((temp1, temp2))
+
+    burger(aligned_points)
+    #temp1= utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
+    #temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
+    #rotated_Burger_vec= np.hstack((temp1, temp2))
     return aligned_points, rotated_Burger_vec
 
 
 def read_from_file():
 
-    mac = False
+    mac = True
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/84426366"
