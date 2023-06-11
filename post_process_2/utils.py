@@ -179,16 +179,24 @@ def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
 
+def plot_colored_points(points):
+    for p in points:
+        if p[2] > 1.5:
+            plt.plot(p[0], p[1], 'ro',markersize=3)
+        else:
+            plt.plot(p[0], p[1], 'bo',markersize=3)
+    plt.show()
+
 def plot(points, edges_with_colors, burger_vecs):
     for (p1, p2), color in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
         plt.plot([x1, x2], [y1, y2], color=color)
 
-    plt.scatter(points[:, 0], points[:, 1])
+    #plt.scatter(points[:, 0], points[:, 1])
     tri = Delaunay(points)
     plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
-    
+
     if burger_vecs is not None:
         plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
     plt.show()
@@ -198,8 +206,8 @@ def plot_points_with_no_edges(points):
     plot(points=points, edges_with_colors=[])
 
 
-def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, L, N, alignment_angel, burger_vecs):
-    a = L / (np.sqrt(N) - 1)
+def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, alignment_angel, burger_vecs,a):
+    # a = L / (np.sqrt(N) - 1)
 
     # Perform Delaunay triangulation and get edges
     tri = Delaunay(points)
@@ -226,17 +234,35 @@ def plot_nn_graph(nn_edges, points):
     plt.show()
 
 
+def perfect_lattice_vectors(a,order):
+    # a = L / (np.sqrt(N) - 1)
+
+    a1, a2 = np.array([a, 0]), np.array([0, a])
+
+    # get lattice vectors
+    perfect_lattice_vectors_only_diags = filter_none(
+        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
+    )
+    perfect_lattice_vectors_only_no_diags = filter_none(
+        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-order, order+1) for m in
+         range(-order, order+1)]
+    )
+
+
+    return perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags
+
+
 def plot_points_with_delaunay_edges(points, L, N):
     # Perform Delaunay triangulation
     tri = Delaunay(points)
 
     a = L / (np.sqrt(N) - 1)
     a1, a2 = np.array([a, 0]), np.array([0, a])
-    # perfect_lattice_vectors = [n * a1 + m * a2 for n in range(-3, 3) for m in range(-3, 3)]
+
     perfect_lattice_vectors_only_diags = filter_none(
         [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-3, 4) for m in range(-3, 4)]
     )
-    # print("perfect_lattice_vectors_only_diags = ", perfect_lattice_vectors_only_diags)
+
     perfect_lattice_vectors_only_no_diags = filter_none(
         [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-3, 4) for m in range(-3, 4)]
     )
@@ -260,7 +286,7 @@ def plot_points_with_delaunay_edges(points, L, N):
     plt.show()
 
 
-def get_L(N, h, rho_H):
+def get_L_and_a(N, h, rho_H):
     # n_row = int(np.sqrt(N))
     # n_col = n_row  # Square initial condition for n_row!=n_col is not implemented...
     r, sig = 1.0, 2.0
@@ -272,14 +298,10 @@ def get_L(N, h, rho_H):
     l_y = edge * n_row_cells
     assert abs(l_x - l_y) < 0.000000001
     # l_z = (h + 1) * sig
-    return l_x
+    return l_x,a
 
 
 def read_points_from_file(file_path: str) -> np.ndarray:
     # load points from file
     points = np.loadtxt(file_path)
-    # delete z column from points
-    points_without_z = np.delete(points, 2, axis=1)
-    # return
-    return points_without_z
-
+    return points
