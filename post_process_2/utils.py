@@ -78,7 +78,7 @@ def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vector
     vec = points[edge[1]] - points[edge[0]]
     x = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_diags)
     y = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_no_diags)
-    # print("x = ", x, ", y = ",  y, ", edge = ", edge, ", vec = ", vec)
+
     if x > y:
         return False
     else:
@@ -179,25 +179,39 @@ def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
 
-def plot_colored_points(points):
+def plot_colored_points(points, l_z):
+    print("coloring the graph")
     for p in points:
-        if p[2] > 1.5:
+        if p[2] > l_z/2:
             plt.plot(p[0], p[1], 'ro',markersize=5)
         else:
             plt.plot(p[0], p[1], 'bo',markersize=5)
 
     plt.show()
 
+
+def plot_frustrations(array_of_edges, points_with_z, l_z):
+    print("coloring frustrations green")
+    for (p1, p2) in array_of_edges:
+        if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or (points_with_z[p1][2] < l_z/2 and points_with_z[p2][2] < l_z/2):
+            x1 = points_with_z[p1][0]
+            y1 = points_with_z[p1][1]
+            x2 = points_with_z[p2][0]
+            y2 = points_with_z[p2][1]
+            plt.plot([x1, x2], [y1, y2], color='green')
+
+
 def plot(points, edges_with_colors, burger_vecs):
+    print("plotting edges")
     for (p1, p2), color in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
-        plt.plot([x1, x2], [y1, y2], color=color)
+        plt.plot([x1, x2], [y1, y2], color=color, alpha=0.5)
 
     #plt.scatter(points[:, 0], points[:, 1])
     #tri = Delaunay(points)
     #plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
-
+    print("plotting Burger field")
     if burger_vecs is not None:
         plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
 
@@ -206,15 +220,17 @@ def plot_points_with_no_edges(points):
     plot(points=points, edges_with_colors=[])
 
 
-def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, alignment_angel, burger_vecs,a):
+def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, alignment_angel, burger_vecs,a,l_z):
     # a = L / (np.sqrt(N) - 1)
+
+    points= np.delete(points_with_z, 2, axis=1)
 
     # Perform Delaunay triangulation and get edges
     tri = Delaunay(points)
     edges = delaunay2edges(tri)
 
     # remove edges that are diagonal
-    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel,order=3)
+    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel, order=1)
 
     # edges
     edges_with_colors = []
@@ -222,9 +238,11 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points, alignmen
         edges_with_colors.append((e, "blue"))
     plot(points=points, edges_with_colors=edges_with_colors, burger_vecs=burger_vecs)
 
+    plot_frustrations(array_of_edges, points_with_z,l_z)
+
 
 def plot_nn_graph(nn_edges, points):
-    c=len(nn_edges[4])
+
     for n in range(len(nn_edges)):
         for e in range(len(nn_edges[n])):
             x1, y1 = nn_edges[n][e][0]
@@ -232,24 +250,6 @@ def plot_nn_graph(nn_edges, points):
             plt.plot([x1, x2], [y1, y2],color='blue')
     plt.scatter(points[:, 0], points[:, 1])
     plt.show()
-
-
-def perfect_lattice_vectors(a,order):
-    # a = L / (np.sqrt(N) - 1)
-
-    a1, a2 = np.array([a, 0]), np.array([0, a])
-
-    # get lattice vectors
-    perfect_lattice_vectors_only_diags = filter_none(
-        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
-    )
-    perfect_lattice_vectors_only_no_diags = filter_none(
-        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-order, order+1) for m in
-         range(-order, order+1)]
-    )
-
-
-    return perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags
 
 
 def plot_points_with_delaunay_edges(points, L, N):
@@ -286,7 +286,7 @@ def plot_points_with_delaunay_edges(points, L, N):
     plt.show()
 
 
-def get_L_and_a(N, h, rho_H):
+def get_params(N, h, rho_H):
     # n_row = int(np.sqrt(N))
     # n_col = n_row  # Square initial condition for n_row!=n_col is not implemented...
     r, sig = 1.0, 2.0
@@ -297,8 +297,25 @@ def get_L_and_a(N, h, rho_H):
     l_x = edge * n_col_cells
     l_y = edge * n_row_cells
     assert abs(l_x - l_y) < 0.000000001
-    # l_z = (h + 1) * sig
-    return l_x,a
+    l_z = (h + 1) * sig
+    return l_x,a, l_z
+
+
+def perfect_lattice_vectors(a,order):
+    # a = L / (np.sqrt(N) - 1)
+
+    a1, a2 = np.array([a, 0]), np.array([0, a])
+
+    # get lattice vectors
+    perfect_lattice_vectors_only_diags =filter_none(
+        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
+    )
+    perfect_lattice_vectors_only_no_diags = filter_none(
+        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-order, order+1) for m in
+         range(-order, order+1)]
+    )
+
+    return perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags
 
 
 def read_points_from_file(file_path: str) -> np.ndarray:
