@@ -182,9 +182,10 @@ def filter_none(l: list) -> list:
 def plot_colored_points(points):
     for p in points:
         if p[2] > 1.5:
-            plt.plot(p[0], p[1], 'ro',markersize=3)
+            plt.plot(p[0], p[1], 'ro',markersize=5)
         else:
-            plt.plot(p[0], p[1], 'bo',markersize=3)
+            plt.plot(p[0], p[1], 'bo',markersize=5)
+
     plt.show()
 
 def plot(points, edges_with_colors, burger_vecs):
@@ -194,12 +195,11 @@ def plot(points, edges_with_colors, burger_vecs):
         plt.plot([x1, x2], [y1, y2], color=color)
 
     #plt.scatter(points[:, 0], points[:, 1])
-    tri = Delaunay(points)
-    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
+    #tri = Delaunay(points)
+    #plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
 
     if burger_vecs is not None:
         plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
-    plt.show()
 
 
 def plot_points_with_no_edges(points):

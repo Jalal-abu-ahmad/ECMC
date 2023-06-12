@@ -79,7 +79,7 @@ def align_points(points, l_x, l_y, N,burger_vecs):
 
 def read_from_file():
 
-    mac = False
+    mac = True
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/84426366"
@@ -93,17 +93,19 @@ def read_from_file():
     h=0.8
     L,a = utils.get_L_and_a(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
-    points =utils.read_points_from_file(file_path=file_path)
-    points_without_z = np.delete(points, 2, axis=1)
-    assert points_without_z.shape == (N, 2)
-    utils.plot_colored_points(points)
+    points_with_z = utils.read_points_from_file(file_path=file_path)
+    points_z=points_with_z[:,2]
+    points = np.delete(points_with_z, 2, axis=1)
+    assert points.shape == (N, 2)
     burger_vecs = np.loadtxt(burger_vectors_path)
-    aligned_points, rotated_Burger_vec = align_points(points_without_z,L,L,N,burger_vecs)
-    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points_without_z, l_x=L, l_y=L , N=N)
+    aligned_points, rotated_Burger_vec = align_points(points,L,L,N,burger_vecs)
+    aligned_points_with_z = np.column_stack((aligned_points, points_z))
+
+    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L , N=N)
     #burger_vecs= burger_field_calculation.Burger_field_calculation(points = points_without_z,l_x=L, l_y=L, N=N, global_theta=global_theta,a=a)
 
     utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points,alignment_angel=0, burger_vecs=rotated_Burger_vec,a=a)
-
+    utils.plot_colored_points(aligned_points_with_z)
 
 if __name__ == "__main__":
     #demo()
