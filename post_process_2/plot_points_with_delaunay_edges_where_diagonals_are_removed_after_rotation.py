@@ -95,9 +95,19 @@ def read_from_file():
     rho_H = 0.82
     h=0.8
     L,a,l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
-    # a = L / (np.sqrt(N) - 1)
+    #a = L / (np.sqrt(N) - 1)
     points_with_z = utils.read_points_from_file(file_path=file_path)
-    points_z=points_with_z[:,2]
+
+    # N = 16
+    # L = 3
+    # l_z = 1
+    # a = 1
+    # points_with_z = np.array([[0,3,0],[1,3,1],[2,3,0],[3,3,1],
+    #                           [0,2,1],[1,2,0],[2,2,1],[3,2,0],
+    #                           [0,1,0],[1,1,1],[2,1,0],[3,1,1],
+    #                           [0,0,1],[1,0,0],[2,0,1],[3,0,0]])
+
+    points_z = points_with_z[:,2]
     points = np.delete(points_with_z, 2, axis=1)
     assert points.shape == (N, 2)
     #burger_vecs = np.loadtxt(burger_vectors_path)

@@ -63,12 +63,12 @@ def cyc_dist(p1, p2, boundaries):
     return np.sqrt(dsq)
 
 
-def is_in_pos_x_direction(edge, points):
-    x=np.array([1,0])
-    y=np.array([0,1])
+def is_horizontal(edge, points):
+    x = np.array([[1, 0], [-1, 0]])
+    y = np.array([[0, 1], [0, -1]])
     vec = points[edge[1]] - points[edge[0]]
-    x_diff = np.linalg.norm(x - vec)
-    y_diff = np.linalg.norm(y - vec)
+    x_diff = get_closest_vector_in_length(vec, x)
+    y_diff = get_closest_vector_in_length(vec, y)
     if x_diff < y_diff:
         return True
     return False
@@ -187,6 +187,8 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo',markersize=5)
 
+    plt.axis([150, 250, 330, 400])
+    plt.gca().set_aspect('equal')
     plt.show()
 
 
@@ -206,11 +208,11 @@ def plot(points, edges_with_colors, burger_vecs):
     for (p1, p2), color in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
-        plt.plot([x1, x2], [y1, y2], color=color, alpha=0.5)
+        plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
 
-    #plt.scatter(points[:, 0], points[:, 1])
-    #tri = Delaunay(points)
-    #plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
+    tri = Delaunay(points)
+    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red',alpha=0.7)
+
     print("plotting Burger field")
     if burger_vecs is not None:
         plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
@@ -235,7 +237,11 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
     # edges
     edges_with_colors = []
     for e in array_of_edges:
-        edges_with_colors.append((e, "blue"))
+        if is_horizontal(e,points):
+            edges_with_colors.append((e, "y"))
+        else:
+            edges_with_colors.append((e, "blue"))
+
     plot(points=points, edges_with_colors=edges_with_colors, burger_vecs=burger_vecs)
 
     plot_frustrations(array_of_edges, points_with_z,l_z)
@@ -248,40 +254,6 @@ def plot_nn_graph(nn_edges, points):
             x1, y1 = nn_edges[n][e][0]
             x2, y2 = nn_edges[n][e][1]
             plt.plot([x1, x2], [y1, y2],color='blue')
-    plt.scatter(points[:, 0], points[:, 1])
-    plt.show()
-
-
-def plot_points_with_delaunay_edges(points, L, N):
-    # Perform Delaunay triangulation
-    tri = Delaunay(points)
-
-    a = L / (np.sqrt(N) - 1)
-    a1, a2 = np.array([a, 0]), np.array([0, a])
-
-    perfect_lattice_vectors_only_diags = filter_none(
-        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-3, 4) for m in range(-3, 4)]
-    )
-
-    perfect_lattice_vectors_only_no_diags = filter_none(
-        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-3, 4) for m in range(-3, 4)]
-    )
-
-    # print("perfect_lattice_vectors_only_no_diags = ", perfect_lattice_vectors_only_no_diags)
-
-    edges = delaunay2edges(tri)
-
-    # print(len(edges))
-
-    array_of_edges = np.unique(edges, axis=0)  # remove duplicates
-    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red')
-    x_lines = []
-    y_lines = []
-    for p1, p2 in array_of_edges:
-        x1, y1 = points[p1]
-        x2, y2 = points[p2]
-        plt.plot([x1, x2], [y1, y2], color='blue')
-
     plt.scatter(points[:, 0], points[:, 1])
     plt.show()
 
