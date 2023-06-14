@@ -11,7 +11,7 @@ def Burger_field_calculation(points,l_x, l_y, N, global_theta,a):
     tri = Delaunay(points)
     triangle_mid_points = tri.points[tri.vertices].mean(axis=1)
     no_of_triangles=len(tri.simplices)
-    perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a,1)
+    perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a,3)
     perfect_lattice_vecs = np.row_stack((perfect_lattice_non_diagonal_vecs, perfect_lattice_diagonal_vecs))
     aligned_perfect_lattice_vecs = utils.rotate_points_by_angle(perfect_lattice_vecs, global_theta)
     for i, triangle in enumerate(tri.simplices):

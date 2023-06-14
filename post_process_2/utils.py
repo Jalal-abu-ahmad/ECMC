@@ -187,7 +187,7 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo',markersize=5)
 
-    plt.axis([150, 250, 330, 400])
+    #plt.axis([150, 250, 330, 400])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -232,7 +232,7 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
     edges = delaunay2edges(tri)
 
     # remove edges that are diagonal
-    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel, order=1)
+    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel, order=3)
 
     # edges
     edges_with_colors = []

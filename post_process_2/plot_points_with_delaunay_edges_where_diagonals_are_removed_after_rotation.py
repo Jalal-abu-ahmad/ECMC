@@ -82,14 +82,12 @@ def align_points(points, l_x, l_y, N,burger_vecs,theta):
 
 def read_from_file():
 
-    mac = False
+    mac = True
 
     if mac:
-        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/84426366"
-        burger_vectors_path="/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.82_AF_triangle_ECMC/OP/burger_vectors/vec_84426366.txt"
+        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
     else:
         file_path="C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
-        burger_vectors_path="C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/OP/burger_vectors/vec_94363239.txt"
 
     N = 90000
     rho_H = 0.82
@@ -104,7 +102,7 @@ def read_from_file():
     # a = 1
     # points_with_z = np.array([[0,3,0],[1,3,1],[2,3,0],[3,3,1],
     #                           [0,2,1],[1,2,0],[2,2,1],[3,2,0],
-    #                           [0,1,0],[1,1,1],[2,1,0],[3,1,1],
+    #                           [0,1,0],[1.5,1,1],[2,1,0],[3,1,1],
     #                           [0,0,1],[1,0,0],[2,0,1],[3,0,0]])
 
     points_z = points_with_z[:,2]
