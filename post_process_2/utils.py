@@ -187,7 +187,7 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo',markersize=5)
 
-    #plt.axis([150, 250, 330, 400])
+    plt.axis([150, 250, 330, 400])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -232,7 +232,7 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
     edges = delaunay2edges(tri)
 
     # remove edges that are diagonal
-    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel, order=3)
+    array_of_edges = filter_diagonal_edges(array_of_edges=edges, a=a, points=points, rotation_angel=alignment_angel, order=1)
 
     # edges
     edges_with_colors = []
@@ -270,16 +270,16 @@ def get_params(N, h, rho_H):
     l_y = edge * n_row_cells
     assert abs(l_x - l_y) < 0.000000001
     l_z = (h + 1) * sig
-    return l_x,a, l_z
+    return l_x, a, l_z
 
 
-def perfect_lattice_vectors(a,order):
+def perfect_lattice_vectors(a, order):
     # a = L / (np.sqrt(N) - 1)
 
     a1, a2 = np.array([a, 0]), np.array([0, a])
 
     # get lattice vectors
-    perfect_lattice_vectors_only_diags =filter_none(
+    perfect_lattice_vectors_only_diags = filter_none(
         [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
     )
     perfect_lattice_vectors_only_no_diags = filter_none(
@@ -291,6 +291,8 @@ def perfect_lattice_vectors(a,order):
 
 
 def read_points_from_file(file_path: str) -> np.ndarray:
+
     # load points from file
     points = np.loadtxt(file_path)
+
     return points

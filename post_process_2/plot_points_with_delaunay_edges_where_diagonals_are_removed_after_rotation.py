@@ -74,7 +74,7 @@ def align_points(points, l_x, l_y, N,burger_vecs,theta):
     aligned_points = utils.rotate_points_by_angle(points, theta)
 
     # burger(aligned_points)
-    temp1= utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
+    temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
     temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
     rotated_Burger_vec= np.hstack((temp1, temp2))
     return aligned_points, rotated_Burger_vec
@@ -82,12 +82,12 @@ def align_points(points, l_x, l_y, N,burger_vecs,theta):
 
 def read_from_file():
 
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
     else:
-        file_path="C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
+        file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
 
     N = 90000
     rho_H = 0.82
