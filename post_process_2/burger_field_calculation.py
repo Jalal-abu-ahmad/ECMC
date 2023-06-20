@@ -5,9 +5,10 @@ import numpy as np
 
 epsilon = 0.00001
 
+
 def Burger_field_calculation(points,l_x, l_y, N, global_theta,a):
 
-    Burger_field=[[0,0,0,0]]
+    Burger_field = [[0, 0, 0, 0]]
     tri = Delaunay(points)
     triangle_mid_points = tri.points[tri.vertices].mean(axis=1)
     no_of_triangles=len(tri.simplices)
@@ -17,7 +18,7 @@ def Burger_field_calculation(points,l_x, l_y, N, global_theta,a):
     for i, triangle in enumerate(tri.simplices):
         if (i % 1000) == 0:
             print("Burger field progress = ", int((i / no_of_triangles) * 100), "%")
-        ab_ref,bc_ref,ca_ref=compare_triangle_edges_to_reference_lattice(points,triangle,aligned_perfect_lattice_vecs)
+        ab_ref, bc_ref, ca_ref = compare_triangle_edges_to_reference_lattice(points, triangle, aligned_perfect_lattice_vecs)
         Burger_circut = ab_ref + bc_ref + ca_ref
         if is_not_zero(Burger_circut):
             Burger_field = np.row_stack((Burger_field,Burger_vector_calc(triangle_mid_points[i],Burger_circut)))
@@ -32,7 +33,7 @@ def Burger_field_calculation(points,l_x, l_y, N, global_theta,a):
 def is_not_zero(Burger_circut):
     for coor in Burger_circut:
         for i in coor:
-            if i > epsilon:
+            if np.abs(i) > epsilon:
                 return True
 
     return False

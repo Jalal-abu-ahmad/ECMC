@@ -187,7 +187,7 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo',markersize=5)
 
-    plt.axis([150, 250, 330, 400])
+    plt.axis([160, 230, 340, 390])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -211,11 +211,11 @@ def plot(points, edges_with_colors, burger_vecs):
         plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
 
     tri = Delaunay(points)
-    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red',alpha=0.7)
+    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red', alpha=0.7)
 
     print("plotting Burger field")
     if burger_vecs is not None:
-        plt.quiver(burger_vecs[:,0],burger_vecs[:,1],burger_vecs[:,2],burger_vecs[:,3])
+        plt.quiver(burger_vecs[:, 0], burger_vecs[:, 1], burger_vecs[:, 2], burger_vecs[:, 3])
 
 
 def plot_points_with_no_edges(points):
@@ -225,7 +225,7 @@ def plot_points_with_no_edges(points):
 def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, alignment_angel, burger_vecs,a,l_z):
     # a = L / (np.sqrt(N) - 1)
 
-    points= np.delete(points_with_z, 2, axis=1)
+    points = np.delete(points_with_z, 2, axis=1)
 
     # Perform Delaunay triangulation and get edges
     tri = Delaunay(points)
@@ -244,7 +244,7 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
 
     plot(points=points, edges_with_colors=edges_with_colors, burger_vecs=burger_vecs)
 
-    plot_frustrations(array_of_edges, points_with_z,l_z)
+    #plot_frustrations(array_of_edges, points_with_z,l_z)
 
 
 def plot_nn_graph(nn_edges, points):

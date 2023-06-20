@@ -41,7 +41,7 @@ def calculate_rotation_angle(points ,a):
     tri = Delaunay(points)
     list_of_angles = []
     edges = utils.delaunay2edges(tri)
-    utils.filter_diagonal_edges(array_of_edges=edges, a=a, points=points, order=3)
+    utils.filter_diagonal_edges(array_of_edges=edges, a=a, points=points, order=1)
     x_hat = np.array([1, 0])
     for e in edges:
         vec = points[e[1]] - points[e[0]]
@@ -74,15 +74,15 @@ def align_points(points, l_x, l_y, N,burger_vecs,theta):
     aligned_points = utils.rotate_points_by_angle(points, theta)
 
     # burger(aligned_points)
-    temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
-    temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
-    rotated_Burger_vec= np.hstack((temp1, temp2))
-    return aligned_points, rotated_Burger_vec
+    # temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
+    # temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
+    # rotated_Burger_vec= np.hstack((temp1, temp2))
+    return aligned_points
 
 
 def read_from_file():
 
-    mac = False
+    mac = True
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -100,22 +100,36 @@ def read_from_file():
     # L = 3
     # l_z = 1
     # a = 1
-    # points_with_z = np.array([[0,3,0],[1,3,1],[2,3,0],[3,3,1],
-    #                           [0,2,1],[1,2,0],[2,2,1],[3,2,0],
-    #                           [0,1,0],[1.5,1,1],[2,1,0],[3,1,1],
-    #                           [0,0,1],[1,0,0],[2,0,1],[3,0,0]])
+    # noise = 0.2
+    # points_with_z = np.array([[0,3,0],[1,3.2,1],[2,3,0],[3,3,1],
+    #                           [0,2,1],[1.1,2,0],[2,2,1],[3,2,0],
+    #                           [0,1,0],[1,1.2,1],[2.2,0.9,0],[3,1,1],
+    #                           [0,0,1],[1,0,0],[2,0.4,1],[3,0,0]])
 
     points_z = points_with_z[:,2]
     points = np.delete(points_with_z, 2, axis=1)
+
+    # noise = np.random.normal(0, noise, size=points.shape)
+    # points += noise
+
     assert points.shape == (N, 2)
-    #burger_vecs = np.loadtxt(burger_vectors_path)
     print("imported data and parameters")
     global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L , N=N)
-    burger_vecs = burger_field_calculation.Burger_field_calculation(points = points,l_x=L, l_y=L, N=N, global_theta=global_theta,a=a)
-    aligned_points, rotated_Burger_vec = align_points(points,L,L,N,burger_vecs,global_theta)
+
+    aligned_points = align_points(points,L,L,N,points,global_theta)
+    burger_vecs = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L, N=N, global_theta=0, a=a)
+    rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z=aligned_points_with_z,alignment_angel=0, burger_vecs=rotated_Burger_vec,a=a, l_z=l_z)
+    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z=aligned_points_with_z,alignment_angel=global_theta, burger_vecs=rotated_Burger_vec,a=a, l_z=l_z)
+
+    # i=0
+    # text_kwargs = dict(ha='center', va='center', fontsize=15, color='C1')
+    # for p in points:
+    #     plt.pyplot.text(p[0]+a/10, p[1]+a/10, i, **text_kwargs)
+    #     i=i+1
+
     utils.plot_colored_points(aligned_points_with_z, l_z)
+
 
 
 if __name__ == "__main__":
