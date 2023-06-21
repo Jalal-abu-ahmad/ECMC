@@ -13,14 +13,14 @@ def demo():
     N = 10000  # Number of points
     noise = 0
     rotation_angle_degree = 5
-    boundaries=([L,L])
-    epsilon= L/np.sqrt(N)/2
+    boundaries = ([L, L])
+    epsilon = L / np.sqrt(N) / 2
     rotation_angle = np.deg2rad(rotation_angle_degree)
     rotation_matrix = np.array([
         [np.cos(rotation_angle), np.sin(rotation_angle)],
-        [-np.sin(rotation_angle), np.cos(rotation_angle)] ])
-    x = np.linspace(epsilon, L-epsilon, int(np.sqrt(N)))
-    y = np.linspace(epsilon, L-epsilon, int(np.sqrt(N)))
+        [-np.sin(rotation_angle), np.cos(rotation_angle)]])
+    x = np.linspace(epsilon, L - epsilon, int(np.sqrt(N)))
+    y = np.linspace(epsilon, L - epsilon, int(np.sqrt(N)))
     xx, yy = np.meshgrid(x, y)
     points = np.array([xx.flatten(), yy.flatten()]).T
     rotated_points = points @ rotation_matrix
@@ -37,7 +37,7 @@ def demo():
     utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=rotated_points, L=L, N=N)
 
 
-def calculate_rotation_angle(points ,a):
+def calculate_rotation_angle(points, a):
     tri = Delaunay(points)
     list_of_angles = []
     edges = utils.delaunay2edges(tri)
@@ -65,23 +65,22 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
         psi_n = np.mean(np.exp(1j * 4 * t))
         psimn_vec.append(np.abs(psi_n) * np.exp(1j * i * np.angle(psi_n)))
     psi_avg = np.mean(psimn_vec)
-    orientation = np.imag(np.log(psi_avg))/4
+    orientation = np.imag(np.log(psi_avg)) / 4
     return orientation
 
 
-def align_points(points, l_x, l_y, N,burger_vecs,theta):
-
+def align_points(points, l_x, l_y, N, burger_vecs, theta):
     aligned_points = utils.rotate_points_by_angle(points, theta)
 
     # burger(aligned_points)
     # temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
     # temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
     # rotated_Burger_vec= np.hstack((temp1, temp2))
+
     return aligned_points
 
 
 def read_from_file():
-
     mac = True
 
     if mac:
@@ -91,9 +90,9 @@ def read_from_file():
 
     N = 90000
     rho_H = 0.82
-    h=0.8
-    L,a,l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
-    #a = L / (np.sqrt(N) - 1)
+    h = 0.8
+    L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
+    # a = L / (np.sqrt(N) - 1)
     points_with_z = utils.read_points_from_file(file_path=file_path)
 
     # N = 16
@@ -106,7 +105,7 @@ def read_from_file():
     #                           [0,1,0],[1,1.2,1],[2.2,0.9,0],[3,1,1],
     #                           [0,0,1],[1,0,0],[2,0.4,1],[3,0,0]])
 
-    points_z = points_with_z[:,2]
+    points_z = points_with_z[:, 2]
     points = np.delete(points_with_z, 2, axis=1)
 
     # noise = np.random.normal(0, noise, size=points.shape)
@@ -114,13 +113,16 @@ def read_from_file():
 
     assert points.shape == (N, 2)
     print("imported data and parameters")
-    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L , N=N)
-
-    aligned_points = align_points(points,L,L,N,points,global_theta)
-    burger_vecs = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L, N=N, global_theta=0, a=a)
+    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
+    aligned_points = align_points(points, L, L, N, points, global_theta)
+    print("rotated points")
+    burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
+                                                                                   N=N, global_theta=0, a=a)
     rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z=aligned_points_with_z,alignment_angel=global_theta, burger_vecs=rotated_Burger_vec,a=a, l_z=l_z)
+    # utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z=aligned_points_with_z,
+    #                                                                   alignment_angel=global_theta,
+    #                                                                   burger_vecs=rotated_Burger_vec, a=a, l_z=l_z)
 
     # i=0
     # text_kwargs = dict(ha='center', va='center', fontsize=15, color='C1')
@@ -128,10 +130,12 @@ def read_from_file():
     #     plt.pyplot.text(p[0]+a/10, p[1]+a/10, i, **text_kwargs)
     #     i=i+1
 
+    utils.plot(points=points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec,non_diagonal=True)
+
+    #utils.plot_frustrations(list_of_edges, aligned_points_with_z,l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)
 
 
-
 if __name__ == "__main__":
-    #demo()
+    # demo()
     read_from_file()

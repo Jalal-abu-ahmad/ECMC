@@ -66,7 +66,7 @@ def cyc_dist(p1, p2, boundaries):
 def is_horizontal(edge, points):
     x = np.array([[1, 0], [-1, 0]])
     y = np.array([[0, 1], [0, -1]])
-    vec = points[edge[1]] - points[edge[0]]
+    vec = edge[1] - edge[0]
     x_diff = get_closest_vector_in_length(vec, x)
     y_diff = get_closest_vector_in_length(vec, y)
     if x_diff < y_diff:
@@ -75,7 +75,7 @@ def is_horizontal(edge, points):
 
 
 def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags, points) -> bool:
-    vec = points[edge[1]] - points[edge[0]]
+    vec = edge[1] - edge[0]
     x = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_diags)
     y = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_no_diags)
 
@@ -203,15 +203,16 @@ def plot_frustrations(array_of_edges, points_with_z, l_z):
             plt.plot([x1, x2], [y1, y2], color='green')
 
 
-def plot(points, edges_with_colors, burger_vecs):
+def plot(points, edges_with_colors, burger_vecs, non_diagonal):
     print("plotting edges")
     for (p1, p2), color in edges_with_colors:
-        x1, y1 = points[p1]
-        x2, y2 = points[p2]
-        plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
+        x1, y1 = p1[0], p1[1]
+        x2, y2 = p2[0], p2[1]
+        if not(color == 'red' and non_diagonal==True):
+            plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
 
-    tri = Delaunay(points)
-    plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red', alpha=0.7)
+    # tri = Delaunay(points)
+    # plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red', alpha=0.7)
 
     print("plotting Burger field")
     if burger_vecs is not None:
@@ -237,14 +238,14 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
     # edges
     edges_with_colors = []
     for e in array_of_edges:
-        if is_horizontal(e,points):
+        if is_horizontal(e, points):
             edges_with_colors.append((e, "y"))
         else:
             edges_with_colors.append((e, "blue"))
 
     plot(points=points, edges_with_colors=edges_with_colors, burger_vecs=burger_vecs)
 
-    #plot_frustrations(array_of_edges, points_with_z,l_z)
+    plot_frustrations(array_of_edges, points_with_z,l_z)
 
 
 def plot_nn_graph(nn_edges, points):
