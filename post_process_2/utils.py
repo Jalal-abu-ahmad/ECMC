@@ -85,19 +85,6 @@ def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vector
         return True
 
 
-def delaunay2edges(tri):
-    list_of_edges = []
-    iterations = len(tri.simplices)
-    for i, triangle in enumerate(tri.simplices):
-        if (i % 1000) == 0:
-            print("delaunay2edges progress = ", int((i / iterations) * 100), "%")
-        for e1, e2 in [[0, 1], [1, 2], [2, 0]]:  # for all edges of triangle
-            edge = less_first(triangle[e1], triangle[e2])  # always lesser index first
-            list_of_edges.append(edge)
-    array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
-    return array_of_edges
-
-
 def NN2edges(points, nearest_neighbours, L):
     list_of_edges = []
     for p in range(len(nearest_neighbours)):
@@ -148,33 +135,6 @@ def cyclic_vec(boundaries, sphere1, sphere2):
     return vec
 
 
-def filter_diagonal_edges(array_of_edges, a, points, rotation_angel, order):
-    # calculate a vectors
-    a1, a2 = np.array([a, 0]), np.array([0, a])
-
-    # get lattice vectors
-    perfect_lattice_vectors_only_diags = filter_none(
-        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
-    )
-    perfect_lattice_vectors_only_no_diags = filter_none(
-        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-order, order+1) for m in
-         range(-order, order+1)]
-    )
-
-    perfect_lattice_vectors_only_no_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_no_diags, rotation_angel)
-    perfect_lattice_vectors_only_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_diags, rotation_angel)
-
-    list_of_edges = []
-    iterations = len(array_of_edges)
-    for i, edge in enumerate(array_of_edges):
-        if (i % 1000) == 0:
-            print("filter_edges progress = ", int((i / iterations) * 100), "%")
-        if not is_diagonal(edge, perfect_lattice_vectors_only_diags_aligned, perfect_lattice_vectors_only_no_diags_aligned, points):
-            list_of_edges.append(edge)
-    array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
-    return array_of_edges
-
-
 def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
@@ -192,15 +152,17 @@ def plot_colored_points(points, l_z):
     plt.show()
 
 
-def plot_frustrations(array_of_edges, points_with_z, l_z):
+def plot_frustrations(array_of_edges, points_with_z, points, l_z):
     print("coloring frustrations green")
-    for (p1, p2) in array_of_edges:
-        if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or (points_with_z[p1][2] < l_z/2 and points_with_z[p2][2] < l_z/2):
-            x1 = points_with_z[p1][0]
-            y1 = points_with_z[p1][1]
-            x2 = points_with_z[p2][0]
-            y2 = points_with_z[p2][1]
-            plt.plot([x1, x2], [y1, y2], color='green')
+    for (p1, p2), color in array_of_edges:
+        if not (color == 'red'):
+            if (points_with_z[np.where(points == p1)[0][0]][2] > l_z/2 and points_with_z[np.where(points == p2)[0][0]][2] > l_z/2) or \
+               (points_with_z[np.where(points == p1)[0][0]][2] < l_z/2 and points_with_z[np.where(points == p2)[0][0]][2] < l_z/2):
+
+                x1, y1 = p1[0], p1[1]
+                x2, y2 = p2[0], p2[1]
+
+                plt.plot([x1, x2], [y1, y2], color='green')
 
 
 def plot(points, edges_with_colors, burger_vecs, non_diagonal):
@@ -211,16 +173,81 @@ def plot(points, edges_with_colors, burger_vecs, non_diagonal):
         if not(color == 'red' and non_diagonal==True):
             plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
 
-    # tri = Delaunay(points)
-    # plt.triplot(tri.points[:, 0], tri.points[:, 1], tri.simplices, color='red', alpha=0.7)
-
     print("plotting Burger field")
     if burger_vecs is not None:
-        plt.quiver(burger_vecs[:, 0], burger_vecs[:, 1], burger_vecs[:, 2], burger_vecs[:, 3])
+
+        # plt.quiver(burger_vecs[:, 0], burger_vecs[:, 1], burger_vecs[:, 2], burger_vecs[:, 3])
+
+        for vec in burger_vecs:
+            dx = burger_vecs[2]-burger_vecs[0]
+            dy = burger_vecs[3]-burger_vecs[1]
+            plt.arrow(burger_vecs[0], burger_vecs[1], dx, dy)
 
 
-def plot_points_with_no_edges(points):
-    plot(points=points, edges_with_colors=[])
+def plot_nn_graph(nn_edges, points):
+
+    for n in range(len(nn_edges)):
+        for e in range(len(nn_edges[n])):
+            x1, y1 = nn_edges[n][e][0]
+            x2, y2 = nn_edges[n][e][1]
+            plt.plot([x1, x2], [y1, y2],color='blue')
+    plt.scatter(points[:, 0], points[:, 1])
+    plt.show()
+
+
+def get_params(N, h, rho_H):
+
+    # n_row = int(np.sqrt(N))
+    # n_col = n_row  # Square initial condition for n_row!=n_col is not implemented...
+    r, sig = 1.0, 2.0
+    A = N * sig ** 2 / (rho_H * (1 + h))
+    a = np.sqrt(A / N)
+    n_row_cells, n_col_cells = int(np.sqrt(A) / (a * np.sqrt(2))), int(np.sqrt(A) / (a * np.sqrt(2)))
+    edge = np.sqrt(A / (n_row_cells * n_col_cells))
+    l_x = edge * n_col_cells
+    l_y = edge * n_row_cells
+    assert abs(l_x - l_y) < 0.000000001
+    l_z = (h + 1) * sig
+    return l_x, a, l_z
+
+
+def perfect_lattice_vectors(a, order):
+
+    # a = L / (np.sqrt(N) - 1)
+
+    a1, a2 = np.array([a, 0]), np.array([0, a])
+
+    # get lattice vectors
+    perfect_lattice_vectors_only_diags = filter_none(
+        [(n * a1 + m * a2 if n != 0 and m != 0 else None) for n in range(-order, order+1) for m in range(-order, order+1)]
+    )
+    perfect_lattice_vectors_only_no_diags = filter_none(
+        [(n * a1 + m * a2 if (n == 0 or m == 0) and not (n == 0 and m == 0) else None) for n in range(-order, order+1) for m in
+         range(-order, order+1)]
+    )
+
+    return perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags
+
+
+def read_points_from_file(file_path: str) -> np.ndarray:
+
+    # load points from file
+    points = np.loadtxt(file_path)
+
+    return points
+
+
+"""
+
+__________________________________________________________________________________________________________________
+------------------------------------------------------------------------------------------------------------------
+
+"cemetery of functions that fell out of use, to be deleted"
+
+____________________________________________________________________________________________________________________
+--------------------------------------------------------------------------------------------------------------------
+
+"""
 
 
 def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, alignment_angel, burger_vecs,a,l_z):
@@ -248,35 +275,12 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
     plot_frustrations(array_of_edges, points_with_z,l_z)
 
 
-def plot_nn_graph(nn_edges, points):
-
-    for n in range(len(nn_edges)):
-        for e in range(len(nn_edges[n])):
-            x1, y1 = nn_edges[n][e][0]
-            x2, y2 = nn_edges[n][e][1]
-            plt.plot([x1, x2], [y1, y2],color='blue')
-    plt.scatter(points[:, 0], points[:, 1])
-    plt.show()
+def plot_points_with_no_edges(points):
+    plot(points=points, edges_with_colors=[])
 
 
-def get_params(N, h, rho_H):
-    # n_row = int(np.sqrt(N))
-    # n_col = n_row  # Square initial condition for n_row!=n_col is not implemented...
-    r, sig = 1.0, 2.0
-    A = N * sig ** 2 / (rho_H * (1 + h))
-    a = np.sqrt(A / N)
-    n_row_cells, n_col_cells = int(np.sqrt(A) / (a * np.sqrt(2))), int(np.sqrt(A) / (a * np.sqrt(2)))
-    edge = np.sqrt(A / (n_row_cells * n_col_cells))
-    l_x = edge * n_col_cells
-    l_y = edge * n_row_cells
-    assert abs(l_x - l_y) < 0.000000001
-    l_z = (h + 1) * sig
-    return l_x, a, l_z
-
-
-def perfect_lattice_vectors(a, order):
-    # a = L / (np.sqrt(N) - 1)
-
+def filter_diagonal_edges(array_of_edges, a, points, rotation_angel, order):
+    # calculate a vectors
     a1, a2 = np.array([a, 0]), np.array([0, a])
 
     # get lattice vectors
@@ -288,12 +292,28 @@ def perfect_lattice_vectors(a, order):
          range(-order, order+1)]
     )
 
-    return perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags
+    perfect_lattice_vectors_only_no_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_no_diags, rotation_angel)
+    perfect_lattice_vectors_only_diags_aligned = rotate_points_by_angle(perfect_lattice_vectors_only_diags, rotation_angel)
+
+    list_of_edges = []
+    iterations = len(array_of_edges)
+    for i, edge in enumerate(array_of_edges):
+        if (i % 1000) == 0:
+            print("filter_edges progress = ", int((i / iterations) * 100), "%")
+        if not is_diagonal(edge, perfect_lattice_vectors_only_diags_aligned, perfect_lattice_vectors_only_no_diags_aligned, points):
+            list_of_edges.append(edge)
+    array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
+    return array_of_edges
 
 
-def read_points_from_file(file_path: str) -> np.ndarray:
-
-    # load points from file
-    points = np.loadtxt(file_path)
-
-    return points
+def delaunay2edges(tri):
+    list_of_edges = []
+    iterations = len(tri.simplices)
+    for i, triangle in enumerate(tri.simplices):
+        if (i % 1000) == 0:
+            print("delaunay2edges progress = ", int((i / iterations) * 100), "%")
+        for e1, e2 in [[0, 1], [1, 2], [2, 0]]:  # for all edges of triangle
+            edge = less_first(triangle[e1], triangle[e2])  # always lesser index first
+            list_of_edges.append(edge)
+    array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
+    return array_of_edges

@@ -70,6 +70,7 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
 
 
 def align_points(points, l_x, l_y, N, burger_vecs, theta):
+
     aligned_points = utils.rotate_points_by_angle(points, theta)
 
     # burger(aligned_points)
@@ -81,15 +82,15 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 
 def read_from_file():
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
     else:
         file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
 
-    N = 90000
-    rho_H = 0.82
+    N= 90000
+    rho_H = 0.81
     h = 0.8
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
@@ -120,6 +121,7 @@ def read_from_file():
                                                                                    N=N, global_theta=0, a=a)
     rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
+
     # utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z=aligned_points_with_z,
     #                                                                   alignment_angel=global_theta,
     #                                                                   burger_vecs=rotated_Burger_vec, a=a, l_z=l_z)
@@ -130,9 +132,8 @@ def read_from_file():
     #     plt.pyplot.text(p[0]+a/10, p[1]+a/10, i, **text_kwargs)
     #     i=i+1
 
-    utils.plot(points=points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec,non_diagonal=True)
-
-    #utils.plot_frustrations(list_of_edges, aligned_points_with_z,l_z)
+    utils.plot(points=points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec, non_diagonal=True)
+    #utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)
 
 

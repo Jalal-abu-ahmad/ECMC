@@ -10,7 +10,7 @@ def Burger_field_calculation(points, l_x, l_y, N, global_theta, a):
     Burger_field = [[0, 0, 0, 0]]
     list_of_edges = []
     tri = Delaunay(points)
-    triangle_mid_points = tri.points[tri.vertices].mean(axis=1)
+    triangle_mid_points = tri.points[tri.simplices].mean(axis=1)
     no_of_triangles = len(tri.simplices)
     perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a, 1)
     # perfect_lattice_vecs = np.row_stack((perfect_lattice_non_diagonal_vecs, perfect_lattice_diagonal_vecs))
