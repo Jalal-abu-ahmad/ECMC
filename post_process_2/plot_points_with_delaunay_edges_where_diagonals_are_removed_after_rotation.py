@@ -82,7 +82,8 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 
 def read_from_file():
-    mac = False
+
+    mac = True
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -94,24 +95,10 @@ def read_from_file():
     h = 0.8
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
+
     points_with_z = utils.read_points_from_file(file_path=file_path)
-
-    # N = 16
-    # L = 3
-    # l_z = 1
-    # a = 1
-    # noise = 0.2
-    # points_with_z = np.array([[0,3,0],[1,3.2,1],[2,3,0],[3,3,1],
-    #                           [0,2,1],[1.1,2,0],[2,2,1],[3,2,0],
-    #                           [0,1,0],[1,1.2,1],[2.2,0.9,0],[3,1,1],
-    #                           [0,0,1],[1,0,0],[2,0.4,1],[3,0,0]])
-
     points_z = points_with_z[:, 2]
     points = np.delete(points_with_z, 2, axis=1)
-
-    # noise = np.random.normal(0, noise, size=points.shape)
-    # points += noise
-
     assert points.shape == (N, 2)
     print("imported data and parameters")
     global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
@@ -122,18 +109,9 @@ def read_from_file():
     rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
 
-    # utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z=aligned_points_with_z,
-    #                                                                   alignment_angel=global_theta,
-    #                                                                   burger_vecs=rotated_Burger_vec, a=a, l_z=l_z)
 
-    # i=0
-    # text_kwargs = dict(ha='center', va='center', fontsize=15, color='C1')
-    # for p in points:
-    #     plt.pyplot.text(p[0]+a/10, p[1]+a/10, i, **text_kwargs)
-    #     i=i+1
-
-    utils.plot(points=points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec, non_diagonal=True)
-    #utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec, non_diagonal=True)
+    utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)
 
 

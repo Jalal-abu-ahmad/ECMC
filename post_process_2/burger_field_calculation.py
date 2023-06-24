@@ -13,7 +13,6 @@ def Burger_field_calculation(points, l_x, l_y, N, global_theta, a):
     triangle_mid_points = tri.points[tri.simplices].mean(axis=1)
     no_of_triangles = len(tri.simplices)
     perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a, 1)
-    # perfect_lattice_vecs = np.row_stack((perfect_lattice_non_diagonal_vecs, perfect_lattice_diagonal_vecs))
     aligned_perfect_lattice_diag_vecs = utils.rotate_points_by_angle(perfect_lattice_diagonal_vecs, global_theta)
     aligned_perfect_lattice_non_diag_vecs = utils.rotate_points_by_angle(perfect_lattice_non_diagonal_vecs,
                                                                          global_theta)
@@ -45,8 +44,8 @@ def is_not_zero(Burger_circut):
     return False
 
 
-def edge2vector(edge):
-    return np.array([edge[1] - edge[0]])
+def edge2vector(edge, points):
+    return np.array([points[edge[1]] - points[edge[0]]])
 
 
 def Burger_vector_calc(triangle_mid_point, Burger_circut):
@@ -62,12 +61,12 @@ def sort_triangle_edges_compared_to_reference_lattice(points, triangle,
 
     reference_lattice_vecs = np.row_stack((aligned_perfect_lattice_non_diag_vecs, aligned_perfect_lattice_diag_vecs))
 
-    ab = np.array([points[triangle[0]], points[triangle[1]]])
-    bc = np.array([points[triangle[1]], points[triangle[2]]])
-    ca = np.array([points[triangle[2]], points[triangle[0]]])
-    ab_ref = closest_reference_vector(edge2vector(ab), reference_lattice_vecs)
-    bc_ref = closest_reference_vector(edge2vector(bc), reference_lattice_vecs)
-    ca_ref = closest_reference_vector(edge2vector(ca), reference_lattice_vecs)
+    ab = np.array([triangle[0], triangle[1]])
+    bc = np.array([triangle[1], triangle[2]])
+    ca = np.array([triangle[2], triangle[0]])
+    ab_ref = closest_reference_vector(edge2vector(ab, points), reference_lattice_vecs)
+    bc_ref = closest_reference_vector(edge2vector(bc, points), reference_lattice_vecs)
+    ca_ref = closest_reference_vector(edge2vector(ca, points), reference_lattice_vecs)
 
     for e in [ab, bc, ca]:
         if utils.is_diagonal(e, aligned_perfect_lattice_diag_vecs, aligned_perfect_lattice_non_diag_vecs,points):

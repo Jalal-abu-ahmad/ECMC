@@ -66,7 +66,7 @@ def cyc_dist(p1, p2, boundaries):
 def is_horizontal(edge, points):
     x = np.array([[1, 0], [-1, 0]])
     y = np.array([[0, 1], [0, -1]])
-    vec = edge[1] - edge[0]
+    vec = points[edge[1]] - points[edge[0]]
     x_diff = get_closest_vector_in_length(vec, x)
     y_diff = get_closest_vector_in_length(vec, y)
     if x_diff < y_diff:
@@ -75,7 +75,7 @@ def is_horizontal(edge, points):
 
 
 def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags, points) -> bool:
-    vec = edge[1] - edge[0]
+    vec = points[edge[1]] - points[edge[0]]
     x = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_diags)
     y = get_closest_vector_in_length(vec, perfect_lattice_vectors_only_no_diags)
 
@@ -147,7 +147,7 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo',markersize=5)
 
-    plt.axis([160, 230, 340, 390])
+    plt.axis([130, 200, 360, 410])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -156,11 +156,11 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z):
     print("coloring frustrations green")
     for (p1, p2), color in array_of_edges:
         if not (color == 'red'):
-            if (points_with_z[np.where(points == p1)[0][0]][2] > l_z/2 and points_with_z[np.where(points == p2)[0][0]][2] > l_z/2) or \
-               (points_with_z[np.where(points == p1)[0][0]][2] < l_z/2 and points_with_z[np.where(points == p2)[0][0]][2] < l_z/2):
+            if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or \
+               (points_with_z[p1][2] < l_z/2 and points_with_z[p2][2] < l_z/2):
 
-                x1, y1 = p1[0], p1[1]
-                x2, y2 = p2[0], p2[1]
+                x1, y1 = points[p1]
+                x2, y2 = points[p2]
 
                 plt.plot([x1, x2], [y1, y2], color='green')
 
@@ -168,20 +168,23 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z):
 def plot(points, edges_with_colors, burger_vecs, non_diagonal):
     print("plotting edges")
     for (p1, p2), color in edges_with_colors:
-        x1, y1 = p1[0], p1[1]
-        x2, y2 = p2[0], p2[1]
-        if not(color == 'red' and non_diagonal==True):
+        x1, y1 = points[p1]
+        x2, y2 = points[p2]
+        if not(color == 'red' and non_diagonal):
             plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
 
     print("plotting Burger field")
     if burger_vecs is not None:
-
-        # plt.quiver(burger_vecs[:, 0], burger_vecs[:, 1], burger_vecs[:, 2], burger_vecs[:, 3])
-
         for vec in burger_vecs:
-            dx = burger_vecs[2]-burger_vecs[0]
-            dy = burger_vecs[3]-burger_vecs[1]
-            plt.arrow(burger_vecs[0], burger_vecs[1], dx, dy)
+            dx = vec[2]-vec[0]
+            dy = vec[3]-vec[1]
+            norm = vector_length([dx, dy])
+            dx = dx/norm
+            dy = dy/norm
+            plt.arrow(vec[0]-dx/2, vec[1]-dy/2, dx/2, dy/2, head_width=0.4,
+                                                            head_length=0.7,
+                                                            length_includes_head=True,
+                                                            color='black')
 
 
 def plot_nn_graph(nn_edges, points):
@@ -190,7 +193,7 @@ def plot_nn_graph(nn_edges, points):
         for e in range(len(nn_edges[n])):
             x1, y1 = nn_edges[n][e][0]
             x2, y2 = nn_edges[n][e][1]
-            plt.plot([x1, x2], [y1, y2],color='blue')
+            plt.plot([x1, x2], [y1, y2], color='blue')
     plt.scatter(points[:, 0], points[:, 1])
     plt.show()
 
@@ -271,8 +274,7 @@ def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, a
             edges_with_colors.append((e, "blue"))
 
     plot(points=points, edges_with_colors=edges_with_colors, burger_vecs=burger_vecs)
-
-    plot_frustrations(array_of_edges, points_with_z,l_z)
+    plot_frustrations(array_of_edges, points_with_z, l_z)
 
 
 def plot_points_with_no_edges(points):
