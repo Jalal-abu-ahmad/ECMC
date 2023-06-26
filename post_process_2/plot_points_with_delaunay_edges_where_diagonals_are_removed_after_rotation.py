@@ -56,17 +56,21 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     print("calculating nearest neighbors graph... will take a while...")
     NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
     psimn_vec = []
+    lattice_constant=[]
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
     for i in range(N):
         if (i % 1000) == 0:
             print("angel calculation progress = ", int((i / N) * 100), "%")
         dr = [utils.cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
+        for r in dr:
+            lattice_constant.append(utils.vector_length(r))
         t = np.arctan2([np.abs(r[1]) for r in dr], [np.abs(r[0]) for r in dr])
         psi_n = np.mean(np.exp(1j * 4 * t))
         psimn_vec.append(np.abs(psi_n) * np.exp(1j * i * np.angle(psi_n)))
     psi_avg = np.mean(psimn_vec)
     orientation = np.imag(np.log(psi_avg)) / 4
-    return orientation
+    a = np.mean(lattice_constant)
+    return orientation,a
 
 
 def align_points(points, l_x, l_y, N, burger_vecs, theta):
@@ -93,7 +97,7 @@ def read_from_file():
     N= 90000
     rho_H = 0.81
     h = 0.8
-    L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
+    L, b, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
 
     points_with_z = utils.read_points_from_file(file_path=file_path)
@@ -101,15 +105,14 @@ def read_from_file():
     points = np.delete(points_with_z, 2, axis=1)
     assert points.shape == (N, 2)
     print("imported data and parameters")
-    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
+    global_theta,a = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
     aligned_points = align_points(points, L, L, N, points, global_theta)
     print("rotated points")
     burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
-                                                                                   N=N, global_theta=0, a=a)
+                                                                                   N=N, global_theta=0, a=a, order=1)
     rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
-
-
+    print("a=",a,"b=",b)
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)
