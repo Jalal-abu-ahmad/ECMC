@@ -143,9 +143,9 @@ def plot_colored_points(points, l_z):
     print("coloring the graph")
     for p in points:
         if p[2] > l_z/2:
-            plt.plot(p[0], p[1], 'ro',markersize=5)
+            plt.plot(p[0], p[1], 'ro', markersize=5)
         else:
-            plt.plot(p[0], p[1], 'bo',markersize=5)
+            plt.plot(p[0], p[1], 'bo', markersize=5)
 
     plt.axis([130, 200, 360, 410])
     plt.gca().set_aspect('equal')
