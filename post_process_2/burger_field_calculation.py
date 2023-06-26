@@ -1,7 +1,7 @@
-from scipy.spatial import Delaunay
-import matplotlib as plt
-import utils
 import numpy as np
+from scipy.spatial import Delaunay
+
+import utils
 
 epsilon = 0.00001
 
@@ -24,19 +24,19 @@ def Burger_field_calculation(points, l_x, l_y, N, global_theta, a, order):
                                                                                    aligned_perfect_lattice_diag_vecs,
                                                                                    list_of_edges)
 
-        Burger_circut = ab_ref + bc_ref + ca_ref
-        if is_not_zero(Burger_circut):
-            Burger_field = np.row_stack((Burger_field, Burger_vector_calc(triangle_mid_points[i], Burger_circut)))
+        Burger_circuit = ab_ref + bc_ref + ca_ref
+        if is_not_zero(Burger_circuit):
+            Burger_field = np.row_stack((Burger_field, Burger_vector_calc(triangle_mid_points[i], Burger_circuit)))
     Burger_field = np.delete(Burger_field, 0, 0)
     return np.array(Burger_field), list_of_edges
 
     """
-    deal with cyclic boundry conditions
+    deal with cyclic boundary conditions
     """
 
 
-def is_not_zero(Burger_circut):
-    for coor in Burger_circut:
+def is_not_zero(Burger_circuit):
+    for coor in Burger_circuit:
         for i in coor:
             if np.abs(i) > epsilon:
                 return True
@@ -48,9 +48,9 @@ def edge2vector(edge, points):
     return np.array([points[edge[1]] - points[edge[0]]])
 
 
-def Burger_vector_calc(triangle_mid_point, Burger_circut):
-    Burger_vector = (triangle_mid_point[0], triangle_mid_point[1], Burger_circut[0][0] + triangle_mid_point[0],
-                     Burger_circut[0][1] + triangle_mid_point[1])
+def Burger_vector_calc(triangle_mid_point, Burger_circuit):
+    Burger_vector = (triangle_mid_point[0], triangle_mid_point[1], Burger_circuit[0][0] + triangle_mid_point[0],
+                     Burger_circuit[0][1] + triangle_mid_point[1])
 
     return Burger_vector
 
@@ -69,7 +69,7 @@ def sort_triangle_edges_compared_to_reference_lattice(points, triangle,
     ca_ref = closest_reference_vector(edge2vector(ca, points), reference_lattice_vecs)
 
     for e in [ab, bc, ca]:
-        if utils.is_diagonal(e, aligned_perfect_lattice_diag_vecs, aligned_perfect_lattice_non_diag_vecs,points):
+        if utils.is_diagonal(e, aligned_perfect_lattice_diag_vecs, aligned_perfect_lattice_non_diag_vecs, points):
             list_of_edges.append((e, "red"))
         else:
             if utils.is_horizontal(e, points):

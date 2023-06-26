@@ -1,9 +1,7 @@
-from scipy.spatial import Delaunay
-import matplotlib as plt
-import utils
 import numpy as np
+from scipy.spatial import Delaunay
 
-from Structure import Metric
+import utils
 from post_process_2 import burger_field_calculation
 
 
@@ -87,17 +85,17 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
     else:
         file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
 
-    N= 90000
+    N = 90000
     rho_H = 0.81
     h = 0.8
-    L, b, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
+    L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
 
     points_with_z = utils.read_points_from_file(file_path=file_path)
@@ -105,14 +103,14 @@ def read_from_file():
     points = np.delete(points_with_z, 2, axis=1)
     assert points.shape == (N, 2)
     print("imported data and parameters")
-    global_theta,a = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
+    global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
     aligned_points = align_points(points, L, L, N, points, global_theta)
     print("rotated points")
     burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
                                                                                    N=N, global_theta=0, a=a, order=1)
     rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
-    print("a=",a,"b=",b)
+    print("a=", a, "b=", b)
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)

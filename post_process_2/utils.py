@@ -97,8 +97,8 @@ def NN2edges(points, nearest_neighbours, L):
     return list_of_edges
 
 
-def vec_length(p1,p2):
-    return math.dist(p1,p2)
+def vec_length(p1, p2):
+    return math.dist(p1, p2)
 
 
 def nearest_neighbors_graph(points, l_x, l_y, n_neighbors):
