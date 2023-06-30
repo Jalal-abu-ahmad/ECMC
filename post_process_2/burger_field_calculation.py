@@ -7,21 +7,19 @@ epsilon = 0.00001
 
 
 def Burger_field_calculation(points, l_x, l_y, N, global_theta, a, order):
+
     Burger_field = [[0, 0, 0, 0]]
     list_of_edges = []
     tri = Delaunay(points)
     triangle_mid_points = tri.points[tri.simplices].mean(axis=1)
     no_of_triangles = len(tri.simplices)
     perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a, order)
-    aligned_perfect_lattice_diag_vecs = utils.rotate_points_by_angle(perfect_lattice_diagonal_vecs, global_theta)
-    aligned_perfect_lattice_non_diag_vecs = utils.rotate_points_by_angle(perfect_lattice_non_diagonal_vecs,
-                                                                         global_theta)
     for i, triangle in enumerate(tri.simplices):
         if (i % 1000) == 0:
             print("Burger field progress = ", int((i / no_of_triangles) * 100), "%")
         ab_ref, bc_ref, ca_ref = sort_triangle_edges_compared_to_reference_lattice(points, triangle,
-                                                                                   aligned_perfect_lattice_non_diag_vecs,
-                                                                                   aligned_perfect_lattice_diag_vecs,
+                                                                                   perfect_lattice_non_diagonal_vecs,
+                                                                                   perfect_lattice_diagonal_vecs,
                                                                                    list_of_edges)
 
         Burger_circuit = ab_ref + bc_ref + ca_ref

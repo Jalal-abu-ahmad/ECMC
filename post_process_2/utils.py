@@ -34,8 +34,9 @@ def rotation_matrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
 
 
-def rotate_points_by_angle(points, angle):
+def rotate_points_by_angle(points, angle, l_x, l_y):
     rotated_points = points @ rotation_matrix(angle)
+    cyc_position_alignment(rotated_points, [l_x, l_y])
     return rotated_points
 
 
@@ -48,10 +49,10 @@ def cyc_position_alignment(points, boundaries):
             p[0] = p[0] + boundaries[0]
 
         if p[1] > boundaries[1]:
-             p[1] = p[1] - boundaries[1]
+            p[1] = p[1] - boundaries[1]
 
         if p[1] < 0:
-             p[1] = p[1] + boundaries[1]
+            p[1] = p[1] + boundaries[1]
 
 
 def cyc_dist(p1, p2, boundaries):
@@ -91,7 +92,7 @@ def NN2edges(points, nearest_neighbours, L):
         nn_edges = []
         for n in range(len(nearest_neighbours[p])):
             edge = (points[p], points[nearest_neighbours[p][n]])
-            if vec_length(edge[0],edge[1]) < L/2:
+            if vec_length(edge[0], edge[1]) < L/2:
                 nn_edges.append(edge)
         list_of_edges.append(nn_edges)
     return list_of_edges
@@ -121,13 +122,32 @@ def get_lengths_of_edges(tri, array_of_edges):
     return array_of_lengths
 
 
+def wrap_boundaries(points_with_z, boundaries, w):
+    for p in points_with_z:
+        if p[0] < w:
+            points_with_z = np.append(points_with_z, [[p[0]+boundaries[0], p[1], p[2]]], axis=0)
+        if p[1] < w:
+            points_with_z = np.append(points_with_z, [[p[0], p[1] + boundaries[1], p[2]]], axis=0)
+        if p[0]+w > boundaries[0]:
+            points_with_z = np.append(points_with_z, [[p[0] - boundaries[0], p[1], p[2]]], axis=0)
+        if p[1] + w > boundaries[1]:
+            points_with_z = np.append(points_with_z, [[p[0], p[1] - boundaries[1], p[2]]], axis=0)
+        if p[0] < w and p[1] < w:
+            points_with_z = np.append(points_with_z, [[p[0] + boundaries[0], p[1] + boundaries[1], p[2]]], axis=0)
+        if p[0] < w and p[1]+w > boundaries[1]:
+            points_with_z = np.append(points_with_z, [[p[0] + boundaries[0], p[1] - boundaries[1], p[2]]], axis=0)
+        if p[0]+w > boundaries[0] and p[1] < w:
+            points_with_z = np.append(points_with_z, [[p[0] - boundaries[0], p[1] + boundaries[1], p[2]]], axis=0)
+        if p[0]+w > boundaries[0] and p[1]+w > boundaries[1]:
+            points_with_z = np.append(points_with_z, [[p[0] - boundaries[0], p[1] - boundaries[1], p[2]]], axis=0)
+
+    return points_with_z
+
+
 def cyclic_vec(boundaries, sphere1, sphere2):
-    """
-    :return: vector pointing from sphere2 to sphere1 ("sphere1-sphere2") shortest through cyclic boundaries
-    """
+
     dx = np.array(sphere1) - sphere2  # direct vector
     vec = np.zeros(len(dx))
-    # vec[2] = dx[2]
     for i in range(2):
         l = boundaries[i]
         dxs = np.array([dx[i], dx[i] + l, dx[i] - l])
@@ -148,6 +168,7 @@ def plot_colored_points(points, l_z):
             plt.plot(p[0], p[1], 'bo', markersize=5)
 
     plt.axis([130, 200, 360, 410])
+    #plt.axis([50, 130, 100, 150])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -185,6 +206,17 @@ def plot(points, edges_with_colors, burger_vecs, non_diagonal):
                                                             head_length=0.7,
                                                             length_includes_head=True,
                                                             color='black')
+
+
+def plot_boundaries(boundaries):
+
+    plt.vlines(x=boundaries[0], ymin=0, ymax=boundaries[1], colors='purple')
+
+    plt.vlines(x=0, ymin=0, ymax=boundaries[1], colors='purple')
+
+    plt.hlines(y=boundaries[1], xmin=0, xmax=boundaries[0], colors='purple')
+
+    plt.hlines(y=0, xmin=0, xmax=boundaries[0], colors='purple')
 
 
 def plot_nn_graph(nn_edges, points):
@@ -253,7 +285,7 @@ ________________________________________________________________________________
 """
 
 
-def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, alignment_angel, burger_vecs,a,l_z):
+def plot_points_with_delaunay_edges_where_diagonals_are_removed(points_with_z, alignment_angel, burger_vecs, a, l_z):
     # a = L / (np.sqrt(N) - 1)
 
     points = np.delete(points_with_z, 2, axis=1)

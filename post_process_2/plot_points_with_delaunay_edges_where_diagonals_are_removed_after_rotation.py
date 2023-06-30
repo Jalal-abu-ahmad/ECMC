@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.spatial import Delaunay
 
 import utils
 from post_process_2 import burger_field_calculation
@@ -35,26 +34,11 @@ def demo():
     utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=rotated_points, L=L, N=N)
 
 
-def calculate_rotation_angle(points, a):
-    tri = Delaunay(points)
-    list_of_angles = []
-    edges = utils.delaunay2edges(tri)
-    utils.filter_diagonal_edges(array_of_edges=edges, a=a, points=points, order=1)
-    x_hat = np.array([1, 0])
-    for e in edges:
-        vec = points[e[1]] - points[e[0]]
-        if utils.is_in_pos_x_direction(e, points):
-            list_of_angles.append(utils.calculate_angle_between_two_vectors(vec, x_hat))
-    theta = np.mean(list_of_angles)
-
-    return theta
-
-
 def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     print("calculating nearest neighbors graph... will take a while...")
     NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
     psimn_vec = []
-    lattice_constant=[]
+    lattice_constant = []
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
     for i in range(N):
         if (i % 1000) == 0:
@@ -68,12 +52,12 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     psi_avg = np.mean(psimn_vec)
     orientation = np.imag(np.log(psi_avg)) / 4
     a = np.mean(lattice_constant)
-    return orientation,a
+    return orientation, a
 
 
 def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
-    aligned_points = utils.rotate_points_by_angle(points, theta)
+    aligned_points = utils.rotate_points_by_angle(points, theta, l_x, l_y)
 
     # burger(aligned_points)
     # temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
@@ -85,18 +69,18 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = False
+    mac = True
 
     if mac:
-        #file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
-        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
+        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
+        #file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     else:
-        #file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
+        # file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
         file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     N = 90000
-    rho_H = 0.8
+    rho_H = 0.81
     h = 0.8
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
@@ -109,14 +93,16 @@ def read_from_file():
     global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
     aligned_points = align_points(points, L, L, N, points, global_theta)
     print("rotated points")
-    burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
-                                                                                   N=N, global_theta=0, a=a, order=1)
-    rotated_Burger_vec = burger_vecs
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
-    print("a=", a, "b=", b)
-    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=rotated_Burger_vec, non_diagonal=True)
-    utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
-    utils.plot_colored_points(aligned_points_with_z, l_z)
+    wrapped_points_with_z = utils.wrap_boundaries(aligned_points_with_z, [L, L], int(L/50))
+    wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
+    burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=wrapped_points, l_x=L, l_y=L,
+                                                                                   N=N, global_theta=0, a=a, order=1)
+
+    utils.plot(points=wrapped_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
+    utils.plot_frustrations(list_of_edges, wrapped_points_with_z, wrapped_points, l_z)
+    utils.plot_boundaries([L, L])
+    utils.plot_colored_points(wrapped_points_with_z, l_z)
 
 
 if __name__ == "__main__":
