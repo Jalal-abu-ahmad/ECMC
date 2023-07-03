@@ -28,10 +28,6 @@ def Burger_field_calculation(points, l_x, l_y, N, global_theta, a, order):
     Burger_field = np.delete(Burger_field, 0, 0)
     return np.array(Burger_field), list_of_edges
 
-    """
-    deal with cyclic boundary conditions
-    """
-
 
 def is_not_zero(Burger_circuit):
     for coor in Burger_circuit:

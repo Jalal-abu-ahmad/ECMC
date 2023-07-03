@@ -1,37 +1,44 @@
 import numpy as np
+from matplotlib import pyplot as plt
 
 import utils
 from post_process_2 import burger_field_calculation
 
 
 def demo():
-    # Generate a square lattice of points
-    L = 200  # Size of the square lattice
-    N = 10000  # Number of points
-    noise = 0
-    rotation_angle_degree = 5
-    boundaries = ([L, L])
-    epsilon = L / np.sqrt(N) / 2
-    rotation_angle = np.deg2rad(rotation_angle_degree)
-    rotation_matrix = np.array([
-        [np.cos(rotation_angle), np.sin(rotation_angle)],
-        [-np.sin(rotation_angle), np.cos(rotation_angle)]])
-    x = np.linspace(epsilon, L - epsilon, int(np.sqrt(N)))
-    y = np.linspace(epsilon, L - epsilon, int(np.sqrt(N)))
-    xx, yy = np.meshgrid(x, y)
-    points = np.array([xx.flatten(), yy.flatten()]).T
-    rotated_points = points @ rotation_matrix
-    assert rotated_points.shape == (N, 2)
 
-    # Add some random defects to the lattice
-    noise = np.random.normal(0, noise, size=rotated_points.shape)
-    rotated_points += noise
-    # utils.cyc_position_alignment(rotated_points, boundaries)
-    aligned_points = align_points(rotated_points, l_x=L, l_y=L, N=N)
+    L = 100
+    N = 0
 
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=aligned_points, L=L, N=N)
+    points = [[0, 0]]
+    square_points=[[0,0]]
+    X = np.linspace(0, 500, 501)
+    Y = np.linspace(0, 500, 501)
+    for i in range(len(X)):
+        print(i)
+        for j in range(len(X)):
+            points = np.append(points, [[X[i], Y[j]]], axis=0)
+    points = np.delete(points, 0, 0)
+    points = utils.rotate_points_by_angle(points, 0.5, L, L)
 
-    utils.plot_points_with_delaunay_edges_where_diagonals_are_removed(points=rotated_points, L=L, N=N)
+    for p in points:
+        if 200 <= p[0] <= 300 and 200 <= p[1] <= 300:
+            square_points = np.append(square_points, [p-[200, 200]], axis=0)
+
+    N = len(square_points)-1
+    square_points = np.delete(square_points, 0, 0)
+    plt.scatter(square_points[:, 0], square_points[:, 1])
+    plt.show()
+
+    global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=square_points, l_x=L, l_y=L, N=N)
+    print("theta=", global_theta)
+    aligned_points = align_points(square_points, L, L, N, square_points, global_theta)
+    fig, axs = plt.subplots(1, 2)
+    axs[0].scatter(aligned_points[:, 0], aligned_points[:, 1])
+    plt.gca().set_aspect('equal')
+    axs[1].scatter(square_points[:, 0], square_points[:, 1])
+    plt.gca().set_aspect('equal')
+    plt.show()
 
 
 def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
@@ -69,7 +76,7 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -80,7 +87,7 @@ def read_from_file():
         file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     N = 90000
-    rho_H = 0.81
+    rho_H = 0.8
     h = 0.8
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
@@ -91,20 +98,20 @@ def read_from_file():
     assert points.shape == (N, 2)
     print("imported data and parameters")
     global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
-    aligned_points = align_points(points, L, L, N, points, global_theta)
+    wrapped_points_with_z = utils.wrap_boundaries(points_with_z, [L, L], int(L/50))
+    wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
+    aligned_points = align_points(wrapped_points, L, L, N, points, global_theta)
     print("rotated points")
     aligned_points_with_z = np.column_stack((aligned_points, points_z))
-    wrapped_points_with_z = utils.wrap_boundaries(aligned_points_with_z, [L, L], int(L/50))
-    wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
-    burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=wrapped_points, l_x=L, l_y=L,
+    burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
                                                                                    N=N, global_theta=0, a=a, order=1)
 
-    utils.plot(points=wrapped_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
-    utils.plot_frustrations(list_of_edges, wrapped_points_with_z, wrapped_points, l_z)
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
+    utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_boundaries([L, L])
-    utils.plot_colored_points(wrapped_points_with_z, l_z)
+    utils.plot_colored_points(aligned_points_with_z, l_z)
 
 
 if __name__ == "__main__":
-    # demo()
-    read_from_file()
+    demo()
+    #read_from_file()
