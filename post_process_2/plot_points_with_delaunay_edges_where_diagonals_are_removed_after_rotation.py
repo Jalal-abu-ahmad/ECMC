@@ -11,7 +11,7 @@ def demo():
     N = 0
 
     points = [[0, 0]]
-    square_points=[[0,0]]
+    square_points = [[0, 0]]
     X = np.linspace(0, 500, 501)
     Y = np.linspace(0, 500, 501)
     for i in range(len(X)):
@@ -33,10 +33,8 @@ def demo():
     global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=square_points, l_x=L, l_y=L, N=N)
     print("theta=", global_theta)
     aligned_points = align_points(square_points, L, L, N, square_points, global_theta)
-    fig, axs = plt.subplots(1, 2)
-    axs[0].scatter(aligned_points[:, 0], aligned_points[:, 1])
-    plt.gca().set_aspect('equal')
-    axs[1].scatter(square_points[:, 0], square_points[:, 1])
+
+    plt.scatter(aligned_points[:, 0], aligned_points[:, 1])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -53,9 +51,9 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
         dr = [utils.cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
         for r in dr:
             lattice_constant.append(utils.vector_length(r))
-        t = np.arctan2([np.abs(r[1]) for r in dr], [np.abs(r[0]) for r in dr])
+        t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
         psi_n = np.mean(np.exp(1j * 4 * t))
-        psimn_vec.append(np.abs(psi_n) * np.exp(1j * i * np.angle(psi_n)))
+        psimn_vec.append(np.abs(psi_n) * np.exp(1j * np.angle(psi_n)))
     psi_avg = np.mean(psimn_vec)
     orientation = np.imag(np.log(psi_avg)) / 4
     a = np.mean(lattice_constant)
@@ -83,35 +81,36 @@ def read_from_file():
         #file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     else:
-        # file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
-        file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
+        file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
+        # file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     N = 90000
-    rho_H = 0.8
+    rho_H = 0.81
     h = 0.8
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
 
     points_with_z = utils.read_points_from_file(file_path=file_path)
-    points_z = points_with_z[:, 2]
     points = np.delete(points_with_z, 2, axis=1)
     assert points.shape == (N, 2)
     print("imported data and parameters")
     global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
     wrapped_points_with_z = utils.wrap_boundaries(points_with_z, [L, L], int(L/50))
     wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
+    wrapped_points_z = wrapped_points_with_z[:, 2]
     aligned_points = align_points(wrapped_points, L, L, N, points, global_theta)
     print("rotated points")
-    aligned_points_with_z = np.column_stack((aligned_points, points_z))
+    print("theta=", global_theta)
+    aligned_points_with_z = np.column_stack((aligned_points, wrapped_points_z))
     burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
                                                                                    N=N, global_theta=0, a=a, order=1)
 
+    utils.plot_boundaries([L, L], global_theta)
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
-    utils.plot_boundaries([L, L])
     utils.plot_colored_points(aligned_points_with_z, l_z)
 
 
 if __name__ == "__main__":
-    demo()
-    #read_from_file()
+    #demo()
+    read_from_file()
