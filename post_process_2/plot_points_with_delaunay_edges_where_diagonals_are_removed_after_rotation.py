@@ -105,7 +105,7 @@ def read_from_file():
     burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
                                                                                    N=N, global_theta=0, a=a, order=1)
 
-    utils.plot_boundaries([L, L], global_theta)
+    utils.plot_boundaries([L, L], -global_theta)
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)

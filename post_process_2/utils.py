@@ -167,7 +167,7 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo', markersize=5)
 
-    #plt.axis([130, 200, 360, 410])
+    plt.axis([130, 200, 360, 410])
     # plt.axis([50, 130, 100, 150])
     plt.gca().set_aspect('equal')
     plt.show()
@@ -216,8 +216,8 @@ def plot_boundaries(boundaries, global_theta):
                       [[boundaries[0], 0], [boundaries[0], boundaries[1]]]]
 
     for pair in boundary_pairs:
-        rotate_points_by_angle(np.array(pair), global_theta, boundaries[0], boundaries[1])
-        plt.plot(np.array(pair)[:, 0], np.array(pair)[:, 1], color="purple")
+        pair = np.array(rotate_points_by_angle(np.array(pair), global_theta, boundaries[0], boundaries[1]))
+        plt.plot(pair[:, 0], pair[:, 1], color="purple")
 
 
 def plot_nn_graph(nn_edges, points):
