@@ -37,7 +37,7 @@ def rotation_matrix(theta):
 
 def rotate_points_by_angle(points, angle, l_x, l_y):
     rotated_points = points @ rotation_matrix(angle)
-    #cyc_position_alignment(rotated_points, [l_x, l_y])
+    # cyc_position_alignment(rotated_points, [l_x, l_y])
     return rotated_points
 
 

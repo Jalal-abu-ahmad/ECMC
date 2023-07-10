@@ -12,14 +12,15 @@ def Burger_field_calculation(points, a, order):
     tri = Delaunay(points)
     triangle_mid_points = tri.points[tri.simplices].mean(axis=1)
     no_of_triangles = len(tri.simplices)
+    visited_triangles = np.full(no_of_triangles, False)
     perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a, order)
     for i, triangle in enumerate(tri.simplices):
+        visited_triangles[i] = True
         if (i % 1000) == 0:
             print("Burger field progress = ", int((i / no_of_triangles) * 100), "%")
-        ab_ref, bc_ref, ca_ref = sort_triangle_edges_compared_to_reference_lattice(points, triangle,
-                                                                                     perfect_lattice_non_diagonal_vecs,
-                                                                                     perfect_lattice_diagonal_vecs,
-                                                                                     list_of_edges)
+        ab_ref, bc_ref, ca_ref = compare_to_perfect_lattice(points, triangle, perfect_lattice_non_diagonal_vecs,
+                                                                   perfect_lattice_diagonal_vecs,
+                                                                   list_of_edges, i, tri, visited_triangles)
 
         Burger_circuit = ab_ref + bc_ref + ca_ref
         if is_not_zero(Burger_circuit):
@@ -30,8 +31,16 @@ def Burger_field_calculation(points, a, order):
 
 
 def Burger_points_and_edges(points, list_of_edges, triangle):
-    for i in [-1, -2, -3]:
-        list_of_edges[i][2] = True
+
+    e1 = [triangle[0], triangle[1]]
+    e2 = [triangle[1], triangle[2]]
+    e3 = [triangle[2], triangle[0]]
+
+    for e in [e1, e2, e3]:
+        for i in list(range(-len(list_of_edges), 0)):
+            if matching_edge(e, list_of_edges[i][0]):
+                list_of_edges[i][2] = True
+                break
 
 
 def is_not_zero(Burger_circuit):
@@ -39,7 +48,6 @@ def is_not_zero(Burger_circuit):
         for i in coor:
             if np.abs(i) > epsilon:
                 return True
-
     return False
 
 
@@ -54,11 +62,10 @@ def Burger_vector_calc(triangle_mid_point, Burger_circuit):
     return Burger_vector
 
 
-def sort_triangle_edges_compared_to_reference_lattice(points, triangle,
-                                                      aligned_perfect_lattice_non_diag_vecs,
-                                                      aligned_perfect_lattice_diag_vecs, list_of_edges):
-    reference_lattice_vecs = np.row_stack((aligned_perfect_lattice_non_diag_vecs, aligned_perfect_lattice_diag_vecs))
+def compare_to_perfect_lattice(points, triangle, aligned_perfect_lattice_non_diag_vecs,
+                               aligned_perfect_lattice_diag_vecs, list_of_edges, i, tri, visited_triangles):
 
+    reference_lattice_vecs = np.row_stack((aligned_perfect_lattice_non_diag_vecs, aligned_perfect_lattice_diag_vecs))
     ab = [triangle[0], triangle[1]]
     bc = [triangle[1], triangle[2]]
     ca = [triangle[2], triangle[0]]
@@ -67,10 +74,10 @@ def sort_triangle_edges_compared_to_reference_lattice(points, triangle,
     ca_ref = closest_reference_vector(edge2vector(ca, points), reference_lattice_vecs)
 
     for e in [ab, bc, ca]:
-        if not found_edge(e, list_of_edges):
+        if not found_edge(e, i, tri, visited_triangles):
             if utils.is_diagonal(e, aligned_perfect_lattice_diag_vecs, aligned_perfect_lattice_non_diag_vecs, points):
-                # false means that the edge is not in a non-zero Burger-Circuit, will be overriden later if edge is in a
-                # non zero burger circuit
+                '''false means that the edge is not in a non-zero Burger-Circuit, will be overriden later if edge is in 
+                a non zero burger circuit'''
                 list_of_edges.append([e, "red", False])
             else:
                 if utils.is_horizontal(e, points):
@@ -85,11 +92,28 @@ def closest_reference_vector(vec_ab, reference_lattice):
     return np.array([reference_lattice[i]])
 
 
-def found_edge(edge, list_0f_edges) -> bool:
-    for (p1, p2), color, in_circuit in list_0f_edges:
+def found_edge(edge, triangle_number, tri, visited_triangles) -> bool:
+    list_of_edges = edges_of_neighboring_triangles(triangle_number, tri, visited_triangles)
+    for (p1, p2) in list_of_edges:
         if matching_edge([p1, p2], edge):
             return True
     return False
+
+
+def edges_of_neighboring_triangles(triangle_number, tri, visited_triangles):
+    list_of_edges = []
+    for simplex in tri.neighbors[triangle_number]:
+        if simplex != -1:
+            if visited_triangles[simplex]:
+                triangle = tri.simplices[simplex]
+                e1 = [triangle[0], triangle[1]]
+                e2 = [triangle[1], triangle[2]]
+                e3 = [triangle[2], triangle[0]]
+                list_of_edges.append(e1)
+                list_of_edges.append(e2)
+                list_of_edges.append(e3)
+
+    return list_of_edges
 
 
 def matching_edge(edge1, edge2):

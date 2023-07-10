@@ -51,7 +51,7 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
     for i in range(N):
         if (i % 1000) == 0:
-            print("angel calculation progress = ", int((i / N) * 100), "%")
+            print("angle calculation progress = ", int((i / N) * 100), "%")
         dr = [utils.cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
         for r in dr:
             lattice_constant.append(utils.vector_length(r))
@@ -78,7 +78,7 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -107,9 +107,8 @@ def read_from_file():
     print("theta=", global_theta)
     aligned_points_with_z = np.column_stack((aligned_points, wrapped_points_z))
     burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
-
     utils.plot_boundaries([L, L], -global_theta)
-    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=False)
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z)
     utils.plot_colored_points(aligned_points_with_z, l_z)
 
