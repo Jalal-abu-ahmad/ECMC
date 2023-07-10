@@ -1,6 +1,7 @@
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph
 
@@ -112,16 +113,6 @@ def nearest_neighbors(N, NNgraph):
     return [[j for j in NNgraph.getrow(i).indices] for i in range(N)]
 
 
-def get_lengths_of_edges(tri, array_of_edges):
-    list_of_lengths = []
-    for p1, p2 in array_of_edges:
-        x1, y1 = tri.points[p1]
-        x2, y2 = tri.points[p2]
-        list_of_lengths.append((x1 - x2) ** 2 + (y1 - y2) ** 2)
-    array_of_lengths = np.sqrt(np.array(list_of_lengths))
-    return array_of_lengths
-
-
 def wrap_boundaries(points_with_z, boundaries, w):
     for p in points_with_z:
         if p[0] < w:
@@ -175,8 +166,8 @@ def plot_colored_points(points, l_z):
 
 def plot_frustrations(array_of_edges, points_with_z, points, l_z):
     print("coloring frustrations green")
-    for (p1, p2), color in array_of_edges:
-        if not (color == 'red'):
+    for (p1, p2), color, in_circuit in array_of_edges:
+        if not (color == 'red' or in_circuit):
             if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or \
                (points_with_z[p1][2] < l_z/2 and points_with_z[p2][2] < l_z/2):
 
@@ -188,11 +179,14 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z):
 
 def plot(points, edges_with_colors, burger_vecs, non_diagonal):
     print("plotting edges")
-    for (p1, p2), color in edges_with_colors:
+    for (p1, p2), color, in_circuit in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
         if not(color == 'red' and non_diagonal):
-            plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
+            if not in_circuit:
+                plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
+            else:
+                plt.plot([x1, x2], [y1, y2], color='grey', alpha=1)
 
     print("plotting Burger field")
     if burger_vecs is not None:
@@ -352,3 +346,13 @@ def delaunay2edges(tri):
             list_of_edges.append(edge)
     array_of_edges = np.unique(list_of_edges, axis=0)  # remove duplicates
     return array_of_edges
+
+
+def get_lengths_of_edges(tri, array_of_edges):
+    list_of_lengths = []
+    for p1, p2 in array_of_edges:
+        x1, y1 = tri.points[p1]
+        x2, y2 = tri.points[p2]
+        list_of_lengths.append((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    array_of_lengths = np.sqrt(np.array(list_of_lengths))
+    return array_of_lengths
