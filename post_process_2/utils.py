@@ -56,15 +56,6 @@ def cyc_position_alignment(points, boundaries):
             p[1] = p[1] + boundaries[1]
 
 
-def cyc_dist(p1, p2, boundaries):
-    dx = np.array(p1) - p2  # direct vector
-    dsq = 0
-    for i in range(2):
-        L = boundaries[i]
-        dsq += min(dx[i] ** 2, (dx[i] + L) ** 2, (dx[i] - L) ** 2)  # find shorter path through B.D.
-    return np.sqrt(dsq)
-
-
 def is_horizontal(edge, points):
     x = np.array([[1, 0], [-1, 0]])
     y = np.array([[0, 1], [0, -1]])
@@ -109,6 +100,15 @@ def nearest_neighbors_graph(points, l_x, l_y, n_neighbors):
     return NNgraph
 
 
+def cyc_dist(p1, p2, boundaries):
+    dx = np.array(p1) - p2  # direct vector
+    dsq = 0
+    for i in range(2):
+        L = boundaries[i]
+        dsq += min(dx[i] ** 2, (dx[i] + L) ** 2, (dx[i] - L) ** 2)  # find shorter path through B.D.
+    return np.sqrt(dsq)
+
+
 def nearest_neighbors(N, NNgraph):
     return [[j for j in NNgraph.getrow(i).indices] for i in range(N)]
 
@@ -150,22 +150,27 @@ def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
 
-def plot_colored_points(points, l_z):
+def plot_colored_points(points, l_z, is_point_in_dislocation):
     print("coloring the graph")
-    for p in points:
-        if p[2] > l_z/2:
-            plt.plot(p[0], p[1], 'ro', markersize=5)
+    for i in range(len(points)):
+        p = points[i]
+        if is_point_in_dislocation[i]:
+            plt.plot(p[0], p[1], color='grey', marker='o', markersize=5)
         else:
-            plt.plot(p[0], p[1], 'bo', markersize=5)
+            if p[2] > l_z/2:
+                plt.plot(p[0], p[1], 'ro', markersize=5)
+            else:
+                plt.plot(p[0], p[1], 'bo', markersize=5)
 
-    plt.axis([130, 200, 360, 410])
+    #plt.axis([130, 200, 360, 410])
     # plt.axis([50, 130, 100, 150])
     plt.gca().set_aspect('equal')
     plt.show()
 
 
-def plot_frustrations(array_of_edges, points_with_z, points, l_z):
+def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
     print("coloring frustrations green")
+    no_of_frustrations = 0
     for (p1, p2), color, in_circuit in array_of_edges:
         if not (color == 'red' or in_circuit):
             if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or \
@@ -173,8 +178,20 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z):
 
                 x1, y1 = points[p1]
                 x2, y2 = points[p2]
-
+                if not(out_of_boundaries([x1, y1], L) or out_of_boundaries([x2, y2], L)):
+                    no_of_frustrations += 1
+                    print("[", x1, ",", y1, ", [", x2, ",", y2,"]")
                 plt.plot([x1, x2], [y1, y2], color='green')
+    print("no of frustrations outside dislocations:", no_of_frustrations)
+
+
+def out_of_boundaries(point, L):
+    x, y = point[0], point[1]
+    if x > L or x < 0:
+        return True
+    if y > L or y < 0:
+        return True
+    return False
 
 
 def plot(points, edges_with_colors, burger_vecs, non_diagonal):

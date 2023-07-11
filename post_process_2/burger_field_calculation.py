@@ -9,6 +9,7 @@ epsilon = 0.00001
 def Burger_field_calculation(points, a, order):
     Burger_field = [[0, 0, 0, 0]]
     list_of_edges = []
+    is_point_in_dislocation = np.full(len(points), False)
     tri = Delaunay(points)
     triangle_mid_points = tri.points[tri.simplices].mean(axis=1)
     no_of_triangles = len(tri.simplices)
@@ -25,22 +26,36 @@ def Burger_field_calculation(points, a, order):
         Burger_circuit = ab_ref + bc_ref + ca_ref
         if is_not_zero(Burger_circuit):
             Burger_field = np.row_stack((Burger_field, Burger_vector_calc(triangle_mid_points[i], Burger_circuit)))
-            Burger_points_and_edges(points, list_of_edges, triangle)
+            Burger_points_and_edges(points, list_of_edges, triangle, is_point_in_dislocation)
+    isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation)
     Burger_field = np.delete(Burger_field, 0, 0)
-    return np.array(Burger_field), list_of_edges
+    return np.array(Burger_field), list_of_edges, is_point_in_dislocation
 
 
-def Burger_points_and_edges(points, list_of_edges, triangle):
+def isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation):
 
-    e1 = [triangle[0], triangle[1]]
-    e2 = [triangle[1], triangle[2]]
-    e3 = [triangle[2], triangle[0]]
+    print("isolating dislocations")
+    for i in range(len(list_of_edges)):
+        p1 = list_of_edges[i][0][0]
+        p2 = list_of_edges[i][0][1]
+        if is_point_in_dislocation[p1] or is_point_in_dislocation[p2]:
+            list_of_edges[i][2] = True
 
-    for e in [e1, e2, e3]:
-        for i in list(range(-len(list_of_edges), 0)):
-            if matching_edge(e, list_of_edges[i][0]):
-                list_of_edges[i][2] = True
-                break
+
+def Burger_points_and_edges(points, list_of_edges, triangle, is_point_in_dislocation):
+
+    for i in [0, 1, 2]:
+        is_point_in_dislocation[triangle[i]] = True
+
+    # e1 = [triangle[0], triangle[1]]
+    # e2 = [triangle[1], triangle[2]]
+    # e3 = [triangle[2], triangle[0]]
+    #
+    # for e in [e1, e2, e3]:
+    #     for i in list(range(-len(list_of_edges), 0)):
+    #         if matching_edge(e, list_of_edges[i][0]):
+    #             list_of_edges[i][2] = True
+    #             break
 
 
 def is_not_zero(Burger_circuit):
