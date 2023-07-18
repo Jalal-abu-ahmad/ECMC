@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import utils
-from post_process_2 import burger_field_calculation
+from post_process_2 import burger_field_calculation, Burger_field_optimization
 
 
 def demo():
@@ -78,11 +78,11 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
-        #file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
+        # file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     else:
         file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -99,17 +99,23 @@ def read_from_file():
     assert points.shape == (N, 2)
     print("imported data and parameters")
     global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
+
     wrapped_points_with_z = utils.wrap_boundaries(points_with_z, [L, L], int(L/50))
     wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
     wrapped_points_z = wrapped_points_with_z[:, 2]
+
     aligned_points = align_points(wrapped_points, L, L, N, points, global_theta)
     print("rotated points")
     print("theta=", global_theta)
     aligned_points_with_z = np.column_stack((aligned_points, wrapped_points_z))
-    burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
+
+    Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
+    Burger_field = np.column_stack([Burger_vecs, np.full(len(Burger_vecs), -1)])
+    Burger_field_optimization.Burger_vec_pairing(points, list_of_edges, Burger_field, a)
+
     utils.plot_boundaries([L, L], -global_theta)
-    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=True)
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=Burger_vecs, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
     utils.plot_colored_points(aligned_points_with_z, l_z, is_point_in_dislocation)
 

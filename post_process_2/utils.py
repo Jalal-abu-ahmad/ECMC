@@ -10,6 +10,10 @@ def less_first(a, b):
     return [a, b] if a < b else [b, a]
 
 
+def two_points_2_vector(p1, p2):
+    return [p2[0]-p1[0], p2[1]-p1[1]]
+
+
 def get_closest_vector_in_length(original_vec, list_of_vecs) -> float:
     minimum_dist = float('inf')
     for v in list_of_vecs:
