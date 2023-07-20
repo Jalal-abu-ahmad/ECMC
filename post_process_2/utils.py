@@ -14,6 +14,10 @@ def two_points_2_vector(p1, p2):
     return [p2[0]-p1[0], p2[1]-p1[1]]
 
 
+def two_points_sum(p1, p2):
+    return [p2[0]+p1[0], p2[1]+p1[1]]
+
+
 def get_closest_vector_in_length(original_vec, list_of_vecs) -> float:
     minimum_dist = float('inf')
     for v in list_of_vecs:
@@ -166,8 +170,7 @@ def plot_colored_points(points, l_z, is_point_in_dislocation):
             else:
                 plt.plot(p[0], p[1], 'bo', markersize=5)
 
-    #plt.axis([130, 200, 360, 410])
-    # plt.axis([50, 130, 100, 150])
+    plt.axis([130, 200, 360, 410])
     plt.gca().set_aspect('equal')
     plt.show()
 
@@ -211,7 +214,7 @@ def plot(points, edges_with_colors, burger_vecs, non_diagonal):
 
     print("plotting Burger field")
     if burger_vecs is not None:
-        for vec in burger_vecs:
+        for [vec], neighbor in burger_vecs:
             dx = vec[2]-vec[0]
             dy = vec[3]-vec[1]
             norm = vector_length([dx, dy])
