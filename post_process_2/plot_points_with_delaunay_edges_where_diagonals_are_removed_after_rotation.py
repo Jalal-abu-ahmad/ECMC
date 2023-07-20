@@ -78,7 +78,7 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = True
+    mac = False
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -111,9 +111,6 @@ def read_from_file():
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-
-    # neighbors = np.full(len(Burger_vecs), -1)
-    # Burger_field = np.array([np.append(Burger_field, [[Burger_vecs[i], neighbors[i]]]) for i in range(len(Burger_vecs))])
     Burger_field_optimization.Burger_vec_pairing(points, list_of_edges, Burger_vecs, a)
 
     utils.plot_boundaries([L, L], -global_theta)

@@ -214,13 +214,13 @@ def plot(points, edges_with_colors, burger_vecs, non_diagonal):
 
     print("plotting Burger field")
     if burger_vecs is not None:
-        for [vec], neighbor in burger_vecs:
-            dx = vec[2]-vec[0]
-            dy = vec[3]-vec[1]
+        for [p1_x, p1_y, p2_x, p2_y], neighbor in burger_vecs:
+            dx = p2_x-p1_x
+            dy = p2_y-p1_y
             norm = vector_length([dx, dy])
             dx = dx/norm
             dy = dy/norm
-            plt.arrow(vec[0]-dx/2, vec[1]-dy/2, dx/2, dy/2, head_width=0.4,
+            plt.arrow(p1_x-dx/2, p1_y-dy/2, dx/2, dy/2, head_width=0.4,
                                                             head_length=0.7,
                                                             length_includes_head=True,
                                                             color='black')
