@@ -5,6 +5,8 @@ import numpy as np
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph
 
+from post_process_2 import Burger_field_optimization
+
 
 def less_first(a, b):
     return [a, b] if a < b else [b, a]
@@ -220,10 +222,11 @@ def plot(points, edges_with_colors, burger_vecs, non_diagonal):
             norm = vector_length([dx, dy])
             dx = dx/norm
             dy = dy/norm
-            plt.arrow(p1_x-dx/2, p1_y-dy/2, dx/2, dy/2, head_width=0.4,
-                                                            head_length=0.7,
-                                                            length_includes_head=True,
-                                                            color='black')
+            mid = Burger_field_optimization.midpoint([p1_x, p1_y], [p2_x, p2_y])
+            plt.arrow(mid[0] - dx/2, mid[1] - dy/2, dx, dy, head_width=0.4,
+                                                                head_length=0.7,
+                                                                length_includes_head=True,
+                                                                color='black')
 
 
 def plot_boundaries(boundaries, global_theta):
