@@ -28,12 +28,12 @@ def get_closest_vector_in_length(original_vec, list_of_vecs) -> float:
     return minimum_dist
 
 
-def calculate_angle_between_two_vectors(v1, v2):
-    return np.arccos(dot_product(v1, v2)/(vector_length(v1) * vector_length(v2)))
-
-
 def vector_length(v):
     return np.sqrt(dot_product(v, v))
+
+
+def vec_length_from_2_points(p1, p2):
+    return math.dist(p1, p2)
 
 
 def dot_product(v1, v2):
@@ -86,22 +86,6 @@ def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vector
         return False
     else:
         return True
-
-
-def NN2edges(points, nearest_neighbours, L):
-    list_of_edges = []
-    for p in range(len(nearest_neighbours)):
-        nn_edges = []
-        for n in range(len(nearest_neighbours[p])):
-            edge = (points[p], points[nearest_neighbours[p][n]])
-            if vec_length(edge[0], edge[1]) < L/2:
-                nn_edges.append(edge)
-        list_of_edges.append(nn_edges)
-    return list_of_edges
-
-
-def vec_length(p1, p2):
-    return math.dist(p1, p2)
 
 
 def nearest_neighbors_graph(points, l_x, l_y, n_neighbors):
@@ -203,7 +187,7 @@ def out_of_boundaries(point, L):
     return False
 
 
-def plot(points, edges_with_colors, burger_vecs, non_diagonal):
+def plot(points, edges_with_colors, non_diagonal):
     print("plotting edges")
     for (p1, p2), color, in_circuit in edges_with_colors:
         x1, y1 = points[p1]
@@ -213,6 +197,9 @@ def plot(points, edges_with_colors, burger_vecs, non_diagonal):
                 plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
             else:
                 plt.plot([x1, x2], [y1, y2], color='grey', alpha=1)
+
+
+def plot_burger_field(burger_vecs):
 
     print("plotting Burger field")
     if burger_vecs is not None:
@@ -383,3 +370,19 @@ def get_lengths_of_edges(tri, array_of_edges):
         list_of_lengths.append((x1 - x2) ** 2 + (y1 - y2) ** 2)
     array_of_lengths = np.sqrt(np.array(list_of_lengths))
     return array_of_lengths
+
+
+def NN2edges(points, nearest_neighbours, L):
+    list_of_edges = []
+    for p in range(len(nearest_neighbours)):
+        nn_edges = []
+        for n in range(len(nearest_neighbours[p])):
+            edge = (points[p], points[nearest_neighbours[p][n]])
+            if vec_length_from_2_points(edge[0], edge[1]) < L/2:
+                nn_edges.append(edge)
+        list_of_edges.append(nn_edges)
+    return list_of_edges
+
+
+def calculate_angle_between_two_vectors(v1, v2):
+    return np.arccos(dot_product(v1, v2)/(vector_length(v1) * vector_length(v2)))
