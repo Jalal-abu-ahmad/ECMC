@@ -13,9 +13,10 @@ def midpoint(p1, p2):
     return [(p1[0]+p2[0])/2, (p1[1]+p2[1])/2]
 
 
-def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries):
+def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries, theta):
 
-    Burger_field_diagonals_separated = break_diagonal_vecs_2_components(Burger_field)
+    no_duplicates_Burger_field = clean_Burger_field(Burger_field, boundaries, theta)
+    Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
     up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
 
     up = calculate_vectors_midpoints(up_vecs)
@@ -25,15 +26,35 @@ def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries):
 
     pair_vecs(up, down, right, left, boundaries)
 
+    print("no of up vectors=", len(up))
+    print("no of down vectors=", len(down))
+    print("no of right vectors=", len(right))
+    print("no of left vectors=", len(left))
+
     utils.plot_burger_field(Burger_field)
+    utils.plot_boundaries(boundaries, theta)
     plt.gca().set_aspect('equal')
     plt.show()
+
+
+def clean_Burger_field(Burger_field, boundaries, theta):
+
+    Burger_vecs = []
+
+    for [p1_x, p1_y, p2_x, p2_y], neighbor in Burger_field:
+        Burger_vecs.append([p1_x, p1_y, p2_x, p2_y])
+
+    first_rotation = utils.rotate_Burger_vecs(Burger_vecs, -theta)
+    remove_duplicates = utils.remove_points_outside_boundaries(first_rotation, boundaries)
+    back_to_normal = utils.rotate_Burger_vecs(remove_duplicates, theta)
+
+    return back_to_normal
 
 
 def break_diagonal_vecs_2_components(vector_field):
 
     separated_diagonals_vector_field = []
-    for [p1_x, p1_y, p2_x, p2_y], neighbor in vector_field:
+    for [p1_x, p1_y, p2_x, p2_y] in vector_field:
         if is_vec_diagonal([p1_x, p1_y, p2_x, p2_y]):
             separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[0])
             separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[1])
@@ -44,8 +65,8 @@ def break_diagonal_vecs_2_components(vector_field):
 
 
 def is_vec_diagonal(vec):
-    if vec[0] != vec[2]:
-        if vec[1] != vec[3]:
+    if np.abs(vec[0] - vec[2]) > epsilon:
+        if np.abs(vec[1] - vec[3]) > epsilon:
             return True
     return False
 
@@ -72,12 +93,12 @@ def vecs_classification(vector_field):
     right_vecs = []
 
     for [p1_x, p1_y, p2_x, p2_y] in vector_field:
-        if p1_x == p2_x:
+        if np.abs(p1_x - p2_x) < epsilon:
             if p1_y < p2_y:
                 up_vecs.append([p1_x, p1_y, p2_x, p2_y])
             else:
                 down_vecs.append([p1_x, p1_y, p2_x, p2_y])
-        if p1_y == p2_y:
+        if np.abs(p1_y - p2_y) < epsilon:
             if p1_x < p2_x:
                 right_vecs.append([p1_x, p1_y, p2_x, p2_y])
             else:
@@ -112,7 +133,7 @@ def calculate_cost_matrix(first_side, second_side, boundaries):
 def connect_and_plot_pairs(first_side, second_side, col_ind, row_ind):
 
     for i in range(len(row_ind)):
-        if utils.vec_length_from_2_points([first_side[row_ind[i]][0],first_side[row_ind[i]][1]] , [second_side[col_ind[i]][0], second_side[col_ind[i]][1]]) < 300:
+        if utils.vec_length_from_2_points([first_side[row_ind[i]][0], first_side[row_ind[i]][1]], [second_side[col_ind[i]][0], second_side[col_ind[i]][1]]) < 300:
             plt.plot([first_side[row_ind[i]][0], second_side[col_ind[i]][0]], [first_side[row_ind[i]][1], second_side[col_ind[i]][1]], color="purple")
 
 

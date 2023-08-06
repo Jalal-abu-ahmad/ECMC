@@ -21,7 +21,7 @@ def Burger_field_calculation(points, a, order):
             print("Burger field progress = ", int((i / no_of_triangles) * 100), "%")
         ab_ref, bc_ref, ca_ref = compare_to_perfect_lattice(points, triangle, perfect_lattice_non_diagonal_vecs,
                                                                    perfect_lattice_diagonal_vecs,
-                                                                   list_of_edges, i, tri, visited_triangles)
+                                                                 list_of_edges, i, tri, visited_triangles)
 
         Burger_circuit = ab_ref + bc_ref + ca_ref
         if is_not_zero(Burger_circuit):
@@ -29,7 +29,7 @@ def Burger_field_calculation(points, a, order):
             Burger_points_and_edges(points, list_of_edges, triangle, is_point_in_dislocation)
     isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation)
     Burger_field = np.delete(Burger_field, 0, 0)
-    return np.array(Burger_field), list_of_edges, is_point_in_dislocation
+    return Burger_field, list_of_edges, is_point_in_dislocation
 
 
 def isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation):

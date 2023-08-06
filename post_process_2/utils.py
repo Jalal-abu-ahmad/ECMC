@@ -45,25 +45,18 @@ def rotation_matrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
 
 
-def rotate_points_by_angle(points, angle, l_x, l_y):
+def rotate_points_by_angle(points, angle):
     rotated_points = points @ rotation_matrix(angle)
-    # cyc_position_alignment(rotated_points, [l_x, l_y])
     return rotated_points
 
 
-def cyc_position_alignment(points, boundaries):
-    for p in points:
-        if p[0] > boundaries[0]:
-            p[0] = p[0] - boundaries[0]
+def rotate_Burger_vecs(Burger_field, theta):
 
-        if p[0] < 0:
-            p[0] = p[0] + boundaries[0]
+    temp1 = rotate_points_by_angle(np.array([[vec[0], vec[1]] for vec in Burger_field]), theta)
+    temp2 = rotate_points_by_angle(np.array([[vec[2], vec[3]] for vec in Burger_field]), theta)
+    rotated_Burger_vec = np.hstack((temp1, temp2))
 
-        if p[1] > boundaries[1]:
-            p[1] = p[1] - boundaries[1]
-
-        if p[1] < 0:
-            p[1] = p[1] + boundaries[1]
+    return rotated_Burger_vec
 
 
 def is_horizontal(edge, points):
@@ -178,6 +171,17 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
     print("no of frustrations outside dislocations:", no_of_frustrations)
 
 
+def remove_points_outside_boundaries(points, boundaries):
+
+    points_in_boundary = []
+
+    for p in points:
+        if not out_of_boundaries(Burger_field_optimization.midpoint([p[0], p[1]], [p[2], p[3]]), boundaries[0]):
+            points_in_boundary.append(p)
+
+    return points_in_boundary
+
+
 def out_of_boundaries(point, L):
     x, y = point[0], point[1]
     if x > L or x < 0:
@@ -224,7 +228,7 @@ def plot_boundaries(boundaries, global_theta):
                       [[boundaries[0], 0], [boundaries[0], boundaries[1]]]]
 
     for pair in boundary_pairs:
-        pair = np.array(rotate_points_by_angle(np.array(pair), global_theta, boundaries[0], boundaries[1]))
+        pair = np.array(rotate_points_by_angle(np.array(pair), global_theta))
         plt.plot(pair[:, 0], pair[:, 1], color="purple")
 
 
@@ -386,3 +390,19 @@ def NN2edges(points, nearest_neighbours, L):
 
 def calculate_angle_between_two_vectors(v1, v2):
     return np.arccos(dot_product(v1, v2)/(vector_length(v1) * vector_length(v2)))
+
+
+def cyc_position_alignment(points, boundaries):
+    for p in points:
+        if p[0] > boundaries[0]:
+            p[0] = p[0] - boundaries[0]
+
+        if p[0] < 0:
+            p[0] = p[0] + boundaries[0]
+
+        if p[1] > boundaries[1]:
+            p[1] = p[1] - boundaries[1]
+
+        if p[1] < 0:
+            p[1] = p[1] + boundaries[1]
+

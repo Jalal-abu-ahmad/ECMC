@@ -19,7 +19,7 @@ def demo():
         for j in range(len(X)):
             points = np.append(points, [[X[i], Y[j]]], axis=0)
     points = np.delete(points, 0, 0)
-    points = utils.rotate_points_by_angle(points, 0.5, L, L)
+    points = utils.rotate_points_by_angle(points, 0.5)
 
     for p in points:
         if 200 <= p[0] <= 300 and 200 <= p[1] <= 300:
@@ -66,7 +66,7 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
 
 def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
-    aligned_points = utils.rotate_points_by_angle(points, theta, l_x, l_y)
+    aligned_points = utils.rotate_points_by_angle(points, theta)
 
     # burger(aligned_points)
     # temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
@@ -111,9 +111,9 @@ def read_from_file():
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-    Burger_field_optimization.Burger_vec_pairing(points, list_of_edges, Burger_vecs, a, [L, L])
+    Burger_field_optimization.Burger_vec_pairing(points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
 
-    utils.plot_boundaries([L, L], -global_theta)
+    utils.plot_boundaries([L, L], global_theta)
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
     utils.plot_burger_field(burger_vecs=Burger_vecs)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
