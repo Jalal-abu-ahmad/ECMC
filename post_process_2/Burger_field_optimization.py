@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from sklearn.neighbors import kneighbors_graph
 from shapely.geometry import Point, Polygon
 from scipy.optimize import linear_sum_assignment
+import networkx as nx
 
 from post_process_2 import utils
 
@@ -10,11 +11,10 @@ epsilon = 0.00001
 
 
 def midpoint(p1, p2):
-    return [(p1[0]+p2[0])/2, (p1[1]+p2[1])/2]
+    return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
 
 
 def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries, theta):
-
     no_duplicates_Burger_field = clean_Burger_field(Burger_field, boundaries, theta)
     Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
     up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
@@ -24,7 +24,7 @@ def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries, theta
     right = calculate_vectors_midpoints(right_vecs)
     left = calculate_vectors_midpoints(left_vecs)
 
-    pair_vecs(up, down, right, left, boundaries)
+    pair_vecs(up, down, right, left, boundaries, a)
 
     print("no of up vectors=", len(up))
     print("no of down vectors=", len(down))
@@ -38,7 +38,6 @@ def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries, theta
 
 
 def clean_Burger_field(Burger_field, boundaries, theta):
-
     Burger_vecs = []
 
     for [p1_x, p1_y, p2_x, p2_y], neighbor in Burger_field:
@@ -52,7 +51,6 @@ def clean_Burger_field(Burger_field, boundaries, theta):
 
 
 def break_diagonal_vecs_2_components(vector_field):
-
     separated_diagonals_vector_field = []
     for [p1_x, p1_y, p2_x, p2_y] in vector_field:
         if is_vec_diagonal([p1_x, p1_y, p2_x, p2_y]):
@@ -107,34 +105,83 @@ def vecs_classification(vector_field):
     return up_vecs, down_vecs, right_vecs, left_vecs
 
 
-def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries):
+def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
 
-    up_down_cost_matrix = calculate_cost_matrix(up_vecs, down_vecs, boundaries)
-    right_left_cost_matrix = calculate_cost_matrix(right_vecs, left_vecs, boundaries)
+    up_down_pairing = pairing_two_sides(up_vecs, down_vecs, boundaries, a)
+    right_left_pairing = pairing_two_sides(right_vecs, left_vecs, boundaries, a)
+
+    connect_and_plot_pairs(up_vecs, down_vecs, up_down_pairing)
+    connect_and_plot_pairs(right_vecs, left_vecs, right_left_pairing)
+
+
+def pairing_two_sides(first_side, second_side, boundaries, a):
+
+    """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
+    “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
+
+    weighted_edges = []
+
+    for i in range(len(first_side)):
+        for j in range(len(second_side)):
+            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
+            if distance < 5 * a:
+                weighted_edges.append([i, len(first_side)+j, distance])
+
+    G = nx.Graph()
+    print("pairing up")
+    G.add_weighted_edges_from(weighted_edges)
+    pairing = nx.min_weight_matching(G)
+
+    return pairing
+
+
+def connect_and_plot_pairs(first_side, second_side, pairing):
+
+    two_sides = first_side + second_side
+
+    for (u, v) in pairing:
+        if utils.vec_length_from_2_points([two_sides[u][0], two_sides[u][1]], [two_sides[v][0], two_sides[v][1]]) < 300:
+            plt.plot([two_sides[u][0], two_sides[v][0]], [two_sides[u][1], two_sides[v][1]], color="purple")
+
+
+""" #################################################################################################################"""
+
+
+def pair_vecs_old(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
+    up_down_cost_matrix = calculate_cost_matrix(up_vecs, down_vecs, boundaries, a)
+    right_left_cost_matrix = calculate_cost_matrix(right_vecs, left_vecs, boundaries, a)
 
     up_down_row_ind, up_down_col_ind = linear_sum_assignment(up_down_cost_matrix)
     right_left_row_ind, right_left_col_ind = linear_sum_assignment(right_left_cost_matrix)
 
-    connect_and_plot_pairs(up_vecs, down_vecs, up_down_col_ind, up_down_row_ind)
-    connect_and_plot_pairs(right_vecs, left_vecs, right_left_col_ind, right_left_row_ind)
+    connect_and_plot_pairs_old(up_vecs, down_vecs, up_down_col_ind, up_down_row_ind, a)
+    connect_and_plot_pairs_old(right_vecs, left_vecs, right_left_col_ind, right_left_row_ind, a)
 
 
-def calculate_cost_matrix(first_side, second_side, boundaries):
-
+def calculate_cost_matrix(first_side, second_side, boundaries, a):
     cost_matrix = np.zeros((len(first_side), len(second_side)))
 
     for i in range(len(first_side)):
         for j in range(len(second_side)):
-            cost_matrix[i][j] = np.exp(utils.cyc_dist(first_side[i], second_side[j], boundaries))
+            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
+            cost_matrix[i][j] = np.exp(distance)
 
     return cost_matrix
 
 
-def connect_and_plot_pairs(first_side, second_side, col_ind, row_ind):
-
+def connect_and_plot_pairs_old(first_side, second_side, col_ind, row_ind, a):
+    j = 0
     for i in range(len(row_ind)):
-        if utils.vec_length_from_2_points([first_side[row_ind[i]][0], first_side[row_ind[i]][1]], [second_side[col_ind[i]][0], second_side[col_ind[i]][1]]) < 300:
-            plt.plot([first_side[row_ind[i]][0], second_side[col_ind[i]][0]], [first_side[row_ind[i]][1], second_side[col_ind[i]][1]], color="purple")
+        if utils.vec_length_from_2_points([first_side[row_ind[i]][0], first_side[row_ind[i]][1]],
+                                          [second_side[col_ind[i]][0], second_side[col_ind[i]][1]]) < 300:
+
+            plt.plot([first_side[row_ind[i]][0], second_side[col_ind[i]][0]],
+                     [first_side[row_ind[i]][1], second_side[col_ind[i]][1]], color="purple")
+
+            if utils.vec_length_from_2_points([first_side[row_ind[i]][0], first_side[row_ind[i]][1]],
+                                              [second_side[col_ind[i]][0], second_side[col_ind[i]][1]]) > 5 * a:
+                j += 1
+                print(j)
 
 
 """------------------------------------------------------------------------------------------------------------------"""
@@ -149,7 +196,6 @@ def Burger_vec_pairing_old(points, list_of_edges, Burger_field, a):
 
 
 def iterated_pairing(Burger_field, Burger_vecs_centers, no_of_iterations, no_of_neighbors):
-
     unpaired_vecs = []
     for i in range(len(Burger_vecs_centers)):
         unpaired_vecs.append([Burger_vecs_centers[i], int(i)])
@@ -214,7 +260,6 @@ def add_up_to_zero(vec1, vec2):
 
 
 def create_list_of_polygons(a, Burger_field):
-
     list_of_polygons = []
     buffer = 1.2
 
@@ -222,18 +267,18 @@ def create_list_of_polygons(a, Burger_field):
         if neighbor != -1:
             p1, p2 = less_first(Burger_field[neighbor][0], [p1_x, p1_y, p2_x, p2_y])
             plt.plot([p1[0], p2[0]], [p1[1], p2[1]], color="purple")
-            p11 = p1 + np.array([-buffer*a, buffer*a])
-            p12 = p1 + np.array([-buffer*a, -buffer*a])
+            p11 = p1 + np.array([-buffer * a, buffer * a])
+            p12 = p1 + np.array([-buffer * a, -buffer * a])
 
-            p21 = p2 + np.array([buffer*a, buffer*a])
-            p22 = p2 + np.array([buffer*a, -buffer*a])
+            p21 = p2 + np.array([buffer * a, buffer * a])
+            p22 = p2 + np.array([buffer * a, -buffer * a])
 
             poly = Polygon([p11, p21, p22, p12])
             list_of_polygons.append(poly)
 
             x, y = poly.exterior.xy
             plt.plot(x, y, color='#6699cc', alpha=0.8,
-                        linewidth=1.5, solid_capstyle='round', zorder=2)
+                     linewidth=1.5, solid_capstyle='round', zorder=2)
 
     return list_of_polygons
 

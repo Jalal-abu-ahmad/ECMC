@@ -14,6 +14,7 @@ def Burger_field_calculation(points, a, order):
     triangle_mid_points = tri.points[tri.simplices].mean(axis=1)
     no_of_triangles = len(tri.simplices)
     visited_triangles = np.full(no_of_triangles, False)
+
     perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a, order)
     for i, triangle in enumerate(tri.simplices):
         visited_triangles[i] = True
