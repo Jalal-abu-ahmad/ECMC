@@ -106,17 +106,17 @@ def wrap_boundaries(points_with_z, boundaries, w):
             points_with_z = np.append(points_with_z, [[p[0]+boundaries[0], p[1], p[2]]], axis=0)
         if p[1] < w:
             points_with_z = np.append(points_with_z, [[p[0], p[1] + boundaries[1], p[2]]], axis=0)
-        if p[0]+w > boundaries[0]:
+        if p[0] + w > boundaries[0]:
             points_with_z = np.append(points_with_z, [[p[0] - boundaries[0], p[1], p[2]]], axis=0)
         if p[1] + w > boundaries[1]:
             points_with_z = np.append(points_with_z, [[p[0], p[1] - boundaries[1], p[2]]], axis=0)
         if p[0] < w and p[1] < w:
             points_with_z = np.append(points_with_z, [[p[0] + boundaries[0], p[1] + boundaries[1], p[2]]], axis=0)
-        if p[0] < w and p[1]+w > boundaries[1]:
+        if p[0] < w and p[1] + w > boundaries[1]:
             points_with_z = np.append(points_with_z, [[p[0] + boundaries[0], p[1] - boundaries[1], p[2]]], axis=0)
-        if p[0]+w > boundaries[0] and p[1] < w:
+        if p[0] + w > boundaries[0] and p[1] < w:
             points_with_z = np.append(points_with_z, [[p[0] - boundaries[0], p[1] + boundaries[1], p[2]]], axis=0)
-        if p[0]+w > boundaries[0] and p[1]+w > boundaries[1]:
+        if p[0] + w > boundaries[0] and p[1]+ w > boundaries[1]:
             points_with_z = np.append(points_with_z, [[p[0] - boundaries[0], p[1] - boundaries[1], p[2]]], axis=0)
 
     return points_with_z
