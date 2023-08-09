@@ -40,7 +40,7 @@ def isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation):
         p1 = list_of_edges[i][0][0]
         p2 = list_of_edges[i][0][1]
         if is_point_in_dislocation[p1] or is_point_in_dislocation[p2]:
-            list_of_edges[i][2] = True
+            list_of_edges[i][2] = False
 
 
 def Burger_points_and_edges(points, list_of_edges, triangle, is_point_in_dislocation):

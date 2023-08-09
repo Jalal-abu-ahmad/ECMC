@@ -19,22 +19,13 @@ def Burger_vec_pairing(points, list_of_edges, Burger_field, a, boundaries, theta
     Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
     up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
 
-    up = calculate_vectors_midpoints(up_vecs)
-    down = calculate_vectors_midpoints(down_vecs)
-    right = calculate_vectors_midpoints(right_vecs)
-    left = calculate_vectors_midpoints(left_vecs)
+    paired_Burgers_field = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a)
+    isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points)
 
-    pair_vecs(up, down, right, left, boundaries, a)
-
-    print("no of up vectors=", len(up))
-    print("no of down vectors=", len(down))
-    print("no of right vectors=", len(right))
-    print("no of left vectors=", len(left))
-
-    utils.plot_burger_field(Burger_field)
-    utils.plot_boundaries(boundaries, theta)
-    plt.gca().set_aspect('equal')
-    plt.show()
+    print("no of up vectors=", len(up_vecs))
+    print("no of down vectors=", len(down_vecs))
+    print("no of right vectors=", len(right_vecs))
+    print("no of left vectors=", len(left_vecs))
 
 
 def clean_Burger_field(Burger_field, boundaries, theta):
@@ -107,11 +98,39 @@ def vecs_classification(vector_field):
 
 def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
 
-    up_down_pairing = pairing_two_sides(up_vecs, down_vecs, boundaries, a)
-    right_left_pairing = pairing_two_sides(right_vecs, left_vecs, boundaries, a)
+    up = calculate_vectors_midpoints(up_vecs)
+    down = calculate_vectors_midpoints(down_vecs)
+    right = calculate_vectors_midpoints(right_vecs)
+    left = calculate_vectors_midpoints(left_vecs)
 
-    connect_and_plot_pairs(up_vecs, down_vecs, up_down_pairing)
-    connect_and_plot_pairs(right_vecs, left_vecs, right_left_pairing)
+    up_down_pairing = pairing_two_sides(up, down, boundaries, a)
+    right_left_pairing = pairing_two_sides(right, left, boundaries, a)
+
+    connect_and_plot_pairs(up, down, up_down_pairing)
+    connect_and_plot_pairs(right, left, right_left_pairing)
+
+    paired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
+    paired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
+
+    paired_Burgers_field = paired_up_down + paired_right_left
+
+    return paired_Burgers_field
+
+
+def make_paired_Burger_field(first_side, second_side, pairing, offset):
+
+    full_vecs = first_side + second_side
+    paired = [[[0]*4, -1]] * len(full_vecs)
+
+    for (u, v) in pairing:
+        paired[u] = [full_vecs[u], v + offset]
+        paired[v] = [full_vecs[v], u + offset]
+
+    for i in range(len(full_vecs)):
+        if paired[i][1] == -1:
+            paired[i] = [full_vecs[i], -1]
+
+    return paired
 
 
 def pairing_two_sides(first_side, second_side, boundaries, a):
@@ -142,6 +161,24 @@ def connect_and_plot_pairs(first_side, second_side, pairing):
     for (u, v) in pairing:
         if utils.vec_length_from_2_points([two_sides[u][0], two_sides[u][1]], [two_sides[v][0], two_sides[v][1]]) < 300:
             plt.plot([two_sides[u][0], two_sides[v][0]], [two_sides[u][1], two_sides[v][1]], color="purple")
+
+
+def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points):
+
+    j = 0
+
+    for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
+        j += 1
+        print("isolating edges that cross Burgers vec pairs = ", int((j / len(paired_Burgers_field)) * 100), "%")
+        if neighbor != -1:
+            for i in range(len(list_of_edges)):
+                p1, p2 = calculate_vectors_midpoints([[p1_x, p1_y, p2_x, p2_y], paired_Burgers_field[neighbor][0]])
+                p3 = points[list_of_edges[i][0][0]]
+                p4 = points[list_of_edges[i][0][1]]
+
+                if utils.do_2_lines_intersect(p1, p2, p3, p4):
+                    if utils.vec_length_from_2_points(p1, p2) < boundaries[0]/2:
+                        list_of_edges[i][2] = True
 
 
 """ #################################################################################################################"""
