@@ -160,13 +160,10 @@ def plot_colored_points(points, l_z, is_point_in_dislocation):
     print("coloring the graph")
     for i in range(len(points)):
         p = points[i]
-        if is_point_in_dislocation[i]:
-            plt.plot(p[0], p[1], color='grey', marker='o', markersize=5)
+        if p[2] > l_z/2:
+            plt.plot(p[0], p[1], 'ro', markersize=5)
         else:
-            if p[2] > l_z/2:
-                plt.plot(p[0], p[1], 'ro', markersize=5)
-            else:
-                plt.plot(p[0], p[1], 'bo', markersize=5)
+            plt.plot(p[0], p[1], 'bo', markersize=5)
 
     plt.axis([130, 200, 360, 410])
     plt.gca().set_aspect('equal')
@@ -185,8 +182,8 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
                 x2, y2 = points[p2]
                 if not(out_of_boundaries([x1, y1], L) or out_of_boundaries([x2, y2], L)):
                     no_of_frustrations += 1
-                    print("[", x1, ",", y1, ", [", x2, ",", y2,"]")
-                plt.plot([x1, x2], [y1, y2], color='green')
+                    print("[", x1, ",", y1, "], [", x2, ",", y2, "]")
+                plt.plot([x1, x2], [y1, y2], color='green', lw=1.5)
     print("no of frustrations outside dislocations:", no_of_frustrations)
 
 

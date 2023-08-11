@@ -158,6 +158,7 @@ def connect_and_plot_pairs(first_side, second_side, pairing):
 
     two_sides = first_side + second_side
 
+    print("plotting pairs")
     for (u, v) in pairing:
         if utils.vec_length_from_2_points([two_sides[u][0], two_sides[u][1]], [two_sides[v][0], two_sides[v][1]]) < 300:
             plt.plot([two_sides[u][0], two_sides[v][0]], [two_sides[u][1], two_sides[v][1]], color="purple")
@@ -169,7 +170,8 @@ def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundari
 
     for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
         j += 1
-        print("isolating edges that cross Burgers vec pairs = ", int((j / len(paired_Burgers_field)) * 100), "%")
+        if j % 50 == 0:
+            print("isolating edges that cross Burgers vec pairs = ", int((j / len(paired_Burgers_field)) * 100), "%")
         if neighbor != -1:
             for i in range(len(list_of_edges)):
                 p1, p2 = calculate_vectors_midpoints([[p1_x, p1_y, p2_x, p2_y], paired_Burgers_field[neighbor][0]])
