@@ -7,7 +7,7 @@ epsilon = 0.00001
 
 
 def Burger_field_calculation(points, a, order):
-    Burger_field = [[0, 0, 0, 0], 0]
+    Burger_field = []
     list_of_edges = []
     is_point_in_dislocation = np.full(len(points), False)
     tri = Delaunay(points)
@@ -26,10 +26,9 @@ def Burger_field_calculation(points, a, order):
 
         Burger_circuit = ab_ref + bc_ref + ca_ref
         if is_not_zero(Burger_circuit):
-            Burger_field = np.row_stack([Burger_field, Burger_vector_calc(triangle_mid_points[i], Burger_circuit)])
+            Burger_field.append(Burger_vector_calc(triangle_mid_points[i], Burger_circuit))
             Burger_points_and_edges(points, list_of_edges, triangle, is_point_in_dislocation)
-    isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation)
-    Burger_field = np.delete(Burger_field, 0, 0)
+    # isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation)
     return Burger_field, list_of_edges, is_point_in_dislocation
 
 
@@ -73,8 +72,8 @@ def edge2vector(edge, points):
 
 def Burger_vector_calc(triangle_mid_point, Burger_circuit):
     neighbor = -1
-    Burger_vector = [[triangle_mid_point[0], triangle_mid_point[1], Burger_circuit[0][0] + triangle_mid_point[0],
-                     Burger_circuit[0][1] + triangle_mid_point[1]], int(neighbor)]
+    Burger_vector = [triangle_mid_point[0], triangle_mid_point[1], Burger_circuit[0][0] + triangle_mid_point[0],
+                     Burger_circuit[0][1] + triangle_mid_point[1]]
 
                             # -1 is the neighbor will be used later
 

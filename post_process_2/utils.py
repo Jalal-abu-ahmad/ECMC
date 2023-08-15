@@ -156,37 +156,6 @@ def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
 
-def plot_colored_points(points, l_z, is_point_in_dislocation):
-    print("coloring the graph")
-    for i in range(len(points)):
-        p = points[i]
-        if p[2] > l_z/2:
-            plt.plot(p[0], p[1], 'ro', markersize=5)
-        else:
-            plt.plot(p[0], p[1], 'bo', markersize=5)
-
-    plt.axis([130, 200, 360, 410])
-    plt.gca().set_aspect('equal')
-    plt.show()
-
-
-def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
-    print("coloring frustrations green")
-    no_of_frustrations = 0
-    for (p1, p2), color, in_circuit in array_of_edges:
-        if not (color == 'red' or in_circuit):
-            if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or \
-               (points_with_z[p1][2] < l_z/2 and points_with_z[p2][2] < l_z/2):
-
-                x1, y1 = points[p1]
-                x2, y2 = points[p2]
-                if not(out_of_boundaries([x1, y1], L) or out_of_boundaries([x2, y2], L)):
-                    no_of_frustrations += 1
-                    print("[", x1, ",", y1, "], [", x2, ",", y2, "]")
-                plt.plot([x1, x2], [y1, y2], color='green', lw=1.5)
-    print("no of frustrations outside dislocations:", no_of_frustrations)
-
-
 def remove_points_outside_boundaries(points, boundaries):
 
     points_in_boundary = []
@@ -246,6 +215,36 @@ def plot_boundaries(boundaries, global_theta):
     for pair in boundary_pairs:
         pair = np.array(rotate_points_by_angle(np.array(pair), global_theta))
         plt.plot(pair[:, 0], pair[:, 1], color="purple")
+
+
+def plot_colored_points(points, l_z, is_point_in_dislocation):
+    print("coloring the graph")
+    for i in range(len(points)):
+        p = points[i]
+        if p[2] > l_z/2:
+            plt.plot(p[0], p[1], 'ro', markersize=5)
+        else:
+            plt.plot(p[0], p[1], 'bo', markersize=5)
+
+    plt.axis([130, 200, 360, 410])
+    plt.gca().set_aspect('equal')
+    plt.show()
+
+
+def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
+    print("coloring frustrations green")
+    no_of_frustrations = 0
+    for (p1, p2), color, in_circuit in array_of_edges:
+        if not (color == 'red' or in_circuit):
+            if (points_with_z[p1][2] > l_z/2 and points_with_z[p2][2] > l_z/2) or \
+               (points_with_z[p1][2] < l_z/2 and points_with_z[p2][2] < l_z/2):
+
+                x1, y1 = points[p1]
+                x2, y2 = points[p2]
+                if not(out_of_boundaries([x1, y1], L) or out_of_boundaries([x2, y2], L)):
+                    no_of_frustrations += 1
+                plt.plot([x1, x2], [y1, y2], color='green', lw=1.5)
+    print("no of frustrations outside dislocations:", no_of_frustrations)
 
 
 def plot_nn_graph(nn_edges, points):
