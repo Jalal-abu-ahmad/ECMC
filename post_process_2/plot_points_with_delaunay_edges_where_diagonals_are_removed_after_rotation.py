@@ -5,44 +5,6 @@ import utils
 from post_process_2 import burger_field_calculation, Burger_field_optimization
 
 
-def demo():
-
-    L = 100
-    N = 0
-
-    points = [[0, 0]]
-    square_points = [[0, 0]]
-    X = np.linspace(0, 500, 501)
-    Y = np.linspace(0, 500, 501)
-    for i in range(len(X)):
-        print(i)
-        for j in range(len(X)):
-            points = np.append(points, [[X[i], Y[j]]], axis=0)
-    points = np.delete(points, 0, 0)
-    points = utils.rotate_points_by_angle(points, 0.5)
-
-    for p in points:
-        if 200 <= p[0] <= 300 and 200 <= p[1] <= 300:
-            square_points = np.append(square_points, [p-[200, 200]], axis=0)
-
-    N = len(square_points)-1
-    square_points = np.delete(square_points, 0, 0)
-    plt.scatter(square_points[:, 0], square_points[:, 1])
-    plt.show()
-
-    global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=square_points, l_x=L, l_y=L, N=N)
-    print("theta=", global_theta)
-    aligned_points = align_points(square_points, L, L, N, square_points, global_theta)
-    burger_vecs, list_of_edges = burger_field_calculation.Burger_field_calculation(points=aligned_points, l_x=L, l_y=L,
-                                                                                   N=N, global_theta=0, a=1, order=1)
-
-    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, burger_vecs=burger_vecs, non_diagonal=False)
-
-    plt.scatter(aligned_points[:, 0], aligned_points[:, 1])
-    plt.gca().set_aspect('equal')
-    plt.show()
-
-
 def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     print("calculating nearest neighbors graph... will take a while...")
     NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
@@ -120,5 +82,4 @@ def read_from_file():
 
 
 if __name__ == "__main__":
-    #demo()
     read_from_file()

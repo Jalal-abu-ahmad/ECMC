@@ -195,14 +195,10 @@ def plot_burger_field(burger_vecs):
         for [p1_x, p1_y, p2_x, p2_y], neighbor in burger_vecs:
             dx = p2_x - p1_x
             dy = p2_y - p1_y
-            # norm = vector_length([dx, dy])
-            # dx = dx/norm
-            # dy = dy/norm
-            mid = Burger_field_optimization.midpoint([p1_x, p1_y], [p2_x, p2_y])
-            plt.arrow(mid[0] - dx/2, mid[1] - dy/2, dx, dy, head_width=0.4,
-                                                                head_length=0.7,
-                                                                length_includes_head=True,
-                                                                color='black')
+            plt.arrow(p1_x, p1_y, dx, dy, head_width=0.4,
+                      head_length=0.7,
+                      length_includes_head=True,
+                      color='black')
 
 
 def plot_boundaries(boundaries, global_theta):

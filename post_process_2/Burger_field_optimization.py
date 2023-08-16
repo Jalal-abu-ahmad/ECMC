@@ -1,17 +1,14 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.neighbors import kneighbors_graph
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString
 from scipy.optimize import linear_sum_assignment
 import networkx as nx
+import geopandas as gpd
 
 from post_process_2 import utils
 
 epsilon = 0.00001
-
-
-def midpoint(p1, p2):
-    return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
 
 
 def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, theta):
@@ -19,7 +16,8 @@ def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, 
     Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
     up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
 
-    paired_Burgers_field = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a)
+    paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a)
+    second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a)
     isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a)
 
     utils.plot_burger_field(paired_Burgers_field)
@@ -109,17 +107,36 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
     connect_and_plot_pairs(up, down, up_down_pairing)
     connect_and_plot_pairs(right, left, right_left_pairing)
 
-    paired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
-    paired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
+    paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
+    paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
 
     paired_Burgers_field = paired_up_down + paired_right_left
 
-    return paired_Burgers_field
+    return paired_Burgers_field, unpaired_up_down, unpaired_right_left
+
+
+def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a):
+
+    left = np.array(unpaired_up_down)[:, 0].tolist()
+    right = np.array(unpaired_right_left)[:, 0].tolist()
+
+    full_vecs = unpaired_up_down + unpaired_right_left
+
+    pairing = pairing_two_sides(left, right, boundaries, a)
+
+    for (u, v) in pairing:
+        paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]
+        paired_Burgers_field[full_vecs[v][1]][1] = full_vecs[u][1]
+
+    for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
+        if neighbor == -1:
+            print([p1_x, p1_y, p2_x, p2_y])
 
 
 def make_paired_Burger_field(first_side, second_side, pairing, offset):
 
-    unpaired = 0
+    unpaired = []
+    unpaired_no = 0
     full_vecs = first_side + second_side
     paired = [[[0]*4, -1]] * len(full_vecs)
 
@@ -129,13 +146,14 @@ def make_paired_Burger_field(first_side, second_side, pairing, offset):
 
     for i in range(len(full_vecs)):
         if paired[i][1] == -1:
-            unpaired += 1
+            unpaired_no += 1
             print(full_vecs[i])
+            unpaired.append([full_vecs[i], i+offset])
             paired[i] = [full_vecs[i], -1]
 
-    print("no of unpaired dislocations from this batch is", unpaired)
+    print("no of unpaired dislocations from this batch is", unpaired_no)
 
-    return paired
+    return paired, unpaired
 
 
 def pairing_two_sides(first_side, second_side, boundaries, a):
@@ -171,26 +189,54 @@ def connect_and_plot_pairs(first_side, second_side, pairing):
 
 def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a):
 
-    j = 0
-    visited = np.full(len(list_of_edges), False)
-    for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
-        j += 1
-        if j % 50 == 0:
-            print("isolating edges that cross Burgers vec pairs = ", int((j / len(paired_Burgers_field)) * 100), "%")
-        if neighbor != -1 and not visited[neighbor]:
-            visited[neighbor] = True
-            polygon = create_polygon(a, [p1_x, p1_y, p2_x, p2_y], paired_Burgers_field[neighbor][0])
-            is_p_in_polygon = is_point_in_polygon(polygon, points)
-            for i in range(len(list_of_edges)):
-                if is_p_in_polygon[list_of_edges[i][0][0]] or is_p_in_polygon[list_of_edges[i][0][1]]:
-                    p1 = [p1_x, p1_y]
-                    p2 = [paired_Burgers_field[neighbor][0][0],  paired_Burgers_field[neighbor][0][1]]
-                    p3 = points[list_of_edges[i][0][0]]
-                    p4 = points[list_of_edges[i][0][1]]
+    crossed_edges_indices = return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points,
+                                                                            boundaries)
 
-                    if utils.do_2_lines_intersect(p1, p2, p3, p4):
-                        if utils.vec_length_from_2_points(p1, p2) < boundaries[0]/2:
-                            list_of_edges[i][2] = True
+    for index in crossed_edges_indices:
+        list_of_edges[index][2] = True
+
+
+def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points, boundaries):
+
+    pairs_connecting_lines = []
+    edges = []
+    for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
+        p1 = (p1_x, p1_y)
+        p2 = (paired_Burgers_field[neighbor][0][0], paired_Burgers_field[neighbor][0][1])
+        if utils.vec_length_from_2_points(p1, p2) < boundaries[0] / 2:
+            pair_line = LineString([p1, p2])
+            pairs_connecting_lines.append(pair_line)
+
+    for (u, v), color, in_circuit in list_of_edges:
+        point1 = points[u]
+        point2 = points[v]
+        edge = LineString([point1, point2])
+        edges.append(edge)
+
+    pairs_connecting_lines_gpd = gpd.GeoDataFrame(geometry=pairs_connecting_lines)
+    edges_gpd = gpd.GeoDataFrame(geometry=edges)
+
+    crossings_gpd = gpd.sjoin(edges_gpd, pairs_connecting_lines_gpd, predicate='intersects')
+
+    crossed_edges = list(set(crossings_gpd.index))
+
+    return crossed_edges
+
+
+"""
+
+__________________________________________________________________________________________________________________
+------------------------------------------------------------------------------------------------------------------
+
+"cemetery of functions that fell out of use, to be deleted"
+
+____________________________________________________________________________________________________________________
+--------------------------------------------------------------------------------------------------------------------
+
+"""
+
+
+"""%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"""
 
 
 def create_polygon(a, vec1, vec2):
@@ -221,22 +267,6 @@ def is_point_in_polygon(polygon, points):
         in_polygon[i] = p.within(polygon)
 
     return in_polygon
-
-
-"""
-
-__________________________________________________________________________________________________________________
-------------------------------------------------------------------------------------------------------------------
-
-"cemetery of functions that fell out of use, to be deleted"
-
-____________________________________________________________________________________________________________________
---------------------------------------------------------------------------------------------------------------------
-
-"""
-
-
-"""%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"""
 
 
 def isolate_edges_that_cross_pairs_old(paired_Burgers_field, list_of_edges, boundaries, points):
@@ -364,6 +394,7 @@ def isolate_unsatisfied_paths(Burger_field, Burger_vecs_centers, list_of_edges, 
     # create_list_of_polygons(a, Burger_field)
     pass
 
+
 def add_up_to_zero(vec1, vec2):
     sum = utils.two_points_sum(utils.two_points_2_vector(vec1[0][0:2], vec1[0][2:4]),
                                utils.two_points_2_vector(vec2[0][0:2], vec2[0][2:4]))
@@ -381,3 +412,7 @@ def less_first(vec1, vec2):
     if p1[0] > p2[0]:
         return p2, p1
     return p1, p2
+
+
+def midpoint(p1, p2):
+    return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
