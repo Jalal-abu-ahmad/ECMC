@@ -1,6 +1,6 @@
 import numpy as np
 import utils
-from post_process_2 import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiness_AFism
+from post_process_2 import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiteness_AFism
 import matplotlib.pyplot as plt
 
 
@@ -74,7 +74,7 @@ def read_from_file():
     print("no of total edges:", len(list_of_edges))
     optimized_Burgers_field = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
 
-    connectivity_Bipartiness_AFism.keep_within_boundaries_and_non_isolated(list_of_edges, aligned_points, [L, L], global_theta)
+    connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, aligned_points, [L, L], global_theta)
 
     utils.plot_boundaries([L, L], global_theta)
     utils.plot_burger_field(optimized_Burgers_field, [L, L], True)
