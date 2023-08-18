@@ -1,8 +1,7 @@
 import numpy as np
-from matplotlib import pyplot as plt
-
 import utils
-from post_process_2 import burger_field_calculation, Burger_field_optimization
+from post_process_2 import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiness_AFism
+import matplotlib.pyplot as plt
 
 
 def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
@@ -40,7 +39,7 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
 def read_from_file():
 
-    mac = False
+    mac = True
 
     if mac:
         file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
@@ -73,9 +72,12 @@ def read_from_file():
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-    Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
+    optimized_Burgers_field = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
+
+    connectivity_Bipartiness_AFism.keep_within_boundaries_and_non_isolated(list_of_edges, aligned_points, [L, L], global_theta)
 
     utils.plot_boundaries([L, L], global_theta)
+    utils.plot_burger_field(optimized_Burgers_field, [L, L], True)
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
     utils.plot_colored_points(aligned_points_with_z, l_z, is_point_in_dislocation)

@@ -1,10 +1,8 @@
 import math
-
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph
-
 from post_process_2 import Burger_field_optimization
 
 
@@ -188,7 +186,7 @@ def plot(points, edges_with_colors, non_diagonal):
                 plt.plot([x1, x2], [y1, y2], color='grey', alpha=1)
 
 
-def plot_burger_field(burger_vecs):
+def plot_burger_field(burger_vecs, boundaries, plot_pairing=False):
 
     print("plotting Burger field")
     if burger_vecs is not None:
@@ -199,6 +197,12 @@ def plot_burger_field(burger_vecs):
                       head_length=0.7,
                       length_includes_head=True,
                       color='black')
+
+            if plot_pairing:
+                r_x = burger_vecs[neighbor][0][0]
+                r_y = burger_vecs[neighbor][0][1]
+                if vec_length_from_2_points([p1_x, p1_y], [r_x, r_y]) < boundaries[0]/2:
+                    plt.plot([p1_x, r_x], [p1_y, r_y], color="purple")
 
 
 def plot_boundaries(boundaries, global_theta):

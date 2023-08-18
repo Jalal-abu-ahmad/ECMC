@@ -5,7 +5,6 @@ from shapely.geometry import Point, Polygon, LineString
 from scipy.optimize import linear_sum_assignment
 import networkx as nx
 import geopandas as gpd
-
 from post_process_2 import utils
 
 epsilon = 0.00001
@@ -20,12 +19,12 @@ def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, 
     second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a)
     isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a)
 
-    utils.plot_burger_field(paired_Burgers_field)
-
     print("no of up vectors=", len(up_vecs))
     print("no of down vectors=", len(down_vecs))
     print("no of right vectors=", len(right_vecs))
     print("no of left vectors=", len(left_vecs))
+
+    return paired_Burgers_field
 
 
 def clean_Burger_field(Burger_field, boundaries, theta):
@@ -104,9 +103,6 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
     up_down_pairing = pairing_two_sides(up, down, boundaries, a)
     right_left_pairing = pairing_two_sides(right, left, boundaries, a)
 
-    connect_and_plot_pairs(up, down, up_down_pairing)
-    connect_and_plot_pairs(right, left, right_left_pairing)
-
     paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
     paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
 
@@ -117,8 +113,8 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
 
 def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a):
 
-    left = np.array(unpaired_up_down)[:, 0].tolist()
-    right = np.array(unpaired_right_left)[:, 0].tolist()
+    left = to_vecs(unpaired_up_down)
+    right = to_vecs(unpaired_right_left)
 
     full_vecs = unpaired_up_down + unpaired_right_left
 
@@ -177,16 +173,6 @@ def pairing_two_sides(first_side, second_side, boundaries, a):
     return pairing
 
 
-def connect_and_plot_pairs(first_side, second_side, pairing):
-
-    two_sides = first_side + second_side
-
-    print("plotting pairs")
-    for (u, v) in pairing:
-        if utils.vec_length_from_2_points([two_sides[u][0], two_sides[u][1]], [two_sides[v][0], two_sides[v][1]]) < 300:
-            plt.plot([two_sides[u][0], two_sides[v][0]], [two_sides[u][1], two_sides[v][1]], color="purple")
-
-
 def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a):
 
     crossed_edges_indices = return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points,
@@ -223,6 +209,14 @@ def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burger
     return crossed_edges
 
 
+def to_vecs(vec_with_index):
+    vecs = []
+    for [p1_x, p1_y, p2_x, p2_y], neighbor in vec_with_index:
+        vecs.append([p1_x, p1_y, p2_x, p2_y])
+
+    return vecs
+
+
 """
 
 __________________________________________________________________________________________________________________
@@ -237,6 +231,16 @@ ________________________________________________________________________________
 
 
 """%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"""
+
+
+def connect_and_plot_pairs(first_side, second_side, pairing):
+
+    two_sides = first_side + second_side
+
+    print("plotting pairs")
+    for (u, v) in pairing:
+        if utils.vec_length_from_2_points([two_sides[u][0], two_sides[u][1]], [two_sides[v][0], two_sides[v][1]]) < 300:
+            plt.plot([two_sides[u][0], two_sides[v][0]], [two_sides[u][1], two_sides[v][1]], color="purple")
 
 
 def create_polygon(a, vec1, vec2):

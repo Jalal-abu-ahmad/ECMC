@@ -18,7 +18,7 @@ def Burger_field_calculation(points, a, order):
     perfect_lattice_diagonal_vecs, perfect_lattice_non_diagonal_vecs = utils.perfect_lattice_vectors(a, order)
     for i, triangle in enumerate(tri.simplices):
         visited_triangles[i] = True
-        if (i % 1000) == 0:
+        if (i % 2000) == 0:
             print("Burger field progress = ", int((i / no_of_triangles) * 100), "%")
         ab_ref, bc_ref, ca_ref = compare_to_perfect_lattice(points, triangle, perfect_lattice_non_diagonal_vecs,
                                                                    perfect_lattice_diagonal_vecs,
