@@ -56,6 +56,7 @@ def read_from_file():
     # a = L / (np.sqrt(N) - 1)
 
     points_with_z = utils.read_points_from_file(file_path=file_path)
+    unwrapped_aligned_points_z = points_with_z[:, 2]
     points = np.delete(points_with_z, 2, axis=1)
     assert points.shape == (N, 2)
     print("imported data and parameters")
@@ -69,12 +70,14 @@ def read_from_file():
     print("rotated points")
     print("theta=", global_theta)
     aligned_points_with_z = np.column_stack((aligned_points, wrapped_points_z))
+    unwrapped_aligned_points = utils.rotate_points_by_angle(points, global_theta)
+    unwrapped_aligned_points_with_z = np.column_stack((unwrapped_aligned_points, unwrapped_aligned_points_z))
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
     optimized_Burgers_field = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
 
-    connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, aligned_points, [L, L], global_theta)
+    connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
 
     utils.plot_boundaries([L, L], global_theta)
     utils.plot_burger_field(optimized_Burgers_field, [L, L], True)

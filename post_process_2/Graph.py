@@ -21,12 +21,11 @@ class Graph:
         visited = [False] * (max(self.graph) + 1)
 
         # Create a queue for BFS
-        queue = []
+        queue = [s]
 
         # Mark the source node as
         # visited and enqueue it
         visited[s] = True
-
         while queue:
 
             # Dequeue a vertex from
@@ -48,18 +47,18 @@ class Graph:
     def check_if_Bipartite_BFS(self, node):
 
         visited = [False] * (max(self.graph) + 1)
-        sign = 0 * (max(self.graph) + 1)
+        sign = [0] * (max(self.graph) + 1)
         local_sign = 1
-        queue = []
+        queue = [node]
         non_compatible = 0
         visited[node] = True
         sign[node] = local_sign
 
         while queue:
             node = queue.pop(0)
+            local_sign *= -1
             print(node, end=" ")
             for i in self.graph[node]:
-                local_sign *= -1
                 if not visited[i]:
                     queue.append(i)
                     visited[i] = True
@@ -67,6 +66,8 @@ class Graph:
                 else:
                     if sign[i] != local_sign:
                         non_compatible += 1
-                        print("saaaaaaaaaaaaaaaaaaaaaaaaaaad")
 
-        return non_compatible
+        if non_compatible == 0:
+            print("connected component fully bipartite")
+
+        return non_compatible, sign
