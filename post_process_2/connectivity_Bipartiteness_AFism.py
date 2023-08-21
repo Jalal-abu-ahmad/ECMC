@@ -15,8 +15,8 @@ def connectivity_Bipartiteness_AFism(list_of_edges, points_with_z, boundaries, t
 
     print("plotting edges")
     for (p1, p2) in edges:
-        x1, y1 = vertices[p1][1, 2]
-        x2, y2 = vertices[p2][1, 2]
+        x1, y1 = vertices[p1][0], vertices[p1][1]
+        x2, y2 = vertices[p2][0], vertices[p2][1]
 
         plt.plot([x1, x2], [y1, y2], color='grey', alpha=1)
         plt.plot(x1, y1, 'bo', markersize=5)
@@ -82,12 +82,14 @@ def not_all_visited(visited):
 
 def check_bipartiteness(G, vertices, edges, visited):
     non_compatible, sign_0 = G.check_if_Bipartite_BFS(0)
-    sign = [[sign_0]]
+    sign = [sign_0]
     print("non =", non_compatible)
     for i in range(1, len(visited)):
         node = not_all_visited(visited[i])
         if node != -1:
-            sign.append(G.check_if_Bipartite_BFS(node)[1])
+            non_compatible, sign_i = G.check_if_Bipartite_BFS(node)
+            print("non =", non_compatible)
+            sign.append(sign_i)
 
     return sign
 
