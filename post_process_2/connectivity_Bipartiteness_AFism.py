@@ -107,17 +107,16 @@ def check_bipartiteness(G, vertices, edges, visited):
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
 
     order_parameter = 0
-    i = 0
-    while vertices_sign[0][i] == 0:
-        i += 1
-    if vertices[i][2] > l_z / 2:
-        up = vertices_sign[0][i]
-        down = -1 * vertices_sign[0][i]
-    else:
-        up = -1 * vertices_sign[0][i]
-        down = vertices_sign[0][i]
-
     for component in vertices_sign:
+        i = 0
+        while component[i] == 0:
+            i += 1
+        if vertices[i][2] > l_z / 2:
+            up = component[i]
+            down = -1 * component[i]
+        else:
+            up = -1 * component[i]
+            down = component[i]
         for vertex in range(len(component)):
             if component[vertex] != 0:
                 if vertices[vertex][2] > l_z/2:

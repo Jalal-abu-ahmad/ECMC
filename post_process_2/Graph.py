@@ -34,7 +34,7 @@ class Graph:
             # queue and print it
             s = queue.pop(0)
             if flag:
-                print(s, end=" ")
+                print(s)
 
             # Get all adjacent vertices of the
             # dequeued vertex s.
@@ -51,11 +51,10 @@ class Graph:
 
         visited = [False] * (max(self.graph) + 1)
         sign = [0] * (max(self.graph) + 1)
-        local_sign = 1
         queue = [node]
         non_compatible = 0
         visited[node] = True
-        sign[node] = local_sign
+        sign[node] = 1
 
         while queue:
             node = queue.pop(0)

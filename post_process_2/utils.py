@@ -68,7 +68,7 @@ def is_horizontal(edge, points):
     return False
 
 
-def do_2_lines_intersect(p1, p2, p3, p4):  # p1->p2 , p3->p4
+def where_2_lines_intersect(p1, p2, p3, p4):  # p1->p2 , p3->p4
     x1, y1 = p1
     x2, y2 = p2
     x3, y3 = p3
@@ -82,9 +82,9 @@ def do_2_lines_intersect(p1, p2, p3, p4):  # p1->p2 , p3->p4
     ub = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / denom
     if ub < 0 or ub > 1:  # out of range
         return False
-    # x = x1 + ua * (x2-x1)
-    # y = y1 + ua * (y2-y1)
-    return True
+    x = x1 + ua * (x2-x1)
+    y = y1 + ua * (y2-y1)
+    return [x, y]
 
 
 def is_diagonal(edge, perfect_lattice_vectors_only_diags, perfect_lattice_vectors_only_no_diags, points) -> bool:
@@ -159,7 +159,7 @@ def remove_points_outside_boundaries(points, boundaries):
     points_in_boundary = []
 
     for p in points:
-        if not out_of_boundaries(Burger_field_optimization.midpoint([p[0], p[1]], [p[2], p[3]]), boundaries[0]):
+        if not out_of_boundaries([p[0], p[1]], boundaries[0]):
             points_in_boundary.append(p)
 
     return points_in_boundary

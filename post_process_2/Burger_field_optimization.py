@@ -15,9 +15,9 @@ def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, 
     Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
     up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
 
-    paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a)
-    second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a)
-    isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a)
+    paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
+    second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta)
+    isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta)
 
     print("no of up vectors=", len(up_vecs))
     print("no of down vectors=", len(down_vecs))
@@ -93,15 +93,15 @@ def vecs_classification(vector_field):
     return up_vecs, down_vecs, right_vecs, left_vecs
 
 
-def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
+def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
 
     up = np.array(up_vecs)[:, [0, 1]].tolist()
     down = np.array(down_vecs)[:, [0, 1]].tolist()
     right = np.array(right_vecs)[:, [0, 1]].tolist()
     left = np.array(left_vecs)[:, [0, 1]].tolist()
 
-    up_down_pairing = pairing_two_sides(up, down, boundaries, a)
-    right_left_pairing = pairing_two_sides(right, left, boundaries, a)
+    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta)
+    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta)
 
     paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
     paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
@@ -111,14 +111,14 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a):
     return paired_Burgers_field, unpaired_up_down, unpaired_right_left
 
 
-def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a):
+def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta):
 
     left = to_vecs(unpaired_up_down)
     right = to_vecs(unpaired_right_left)
 
     full_vecs = unpaired_up_down + unpaired_right_left
 
-    pairing = pairing_two_sides(left, right, boundaries, a)
+    pairing = pairing_two_sides(left, right, boundaries, a, theta)
 
     for (u, v) in pairing:
         paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]
@@ -152,17 +152,20 @@ def make_paired_Burger_field(first_side, second_side, pairing, offset):
     return paired, unpaired
 
 
-def pairing_two_sides(first_side, second_side, boundaries, a):
+def pairing_two_sides(first_side, second_side, boundaries, a, theta):
 
     """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
     “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
 
     weighted_edges = []
 
+    first_side = utils.rotate_points_by_angle(first_side, -theta)
+    second_side = utils.rotate_points_by_angle(second_side, -theta)
+
     for i in range(len(first_side)):
         for j in range(len(second_side)):
             distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
-            if distance < 5 * a:
+            if 10 * a > distance > 0:
                 weighted_edges.append([i, len(first_side)+j, distance])
 
     G = nx.Graph()
@@ -173,25 +176,30 @@ def pairing_two_sides(first_side, second_side, boundaries, a):
     return pairing
 
 
-def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a):
+def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta):
 
     crossed_edges_indices = return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points,
-                                                                            boundaries)
+                                                                            boundaries, theta)
 
     for index in crossed_edges_indices:
         list_of_edges[index][2] = True
 
 
-def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points, boundaries):
+def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points, boundaries, theta):
 
     pairs_connecting_lines = []
     edges = []
     for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
-        p1 = (p1_x, p1_y)
-        p2 = (paired_Burgers_field[neighbor][0][0], paired_Burgers_field[neighbor][0][1])
-        if utils.vec_length_from_2_points(p1, p2) < boundaries[0] / 2:
-            pair_line = LineString([p1, p2])
-            pairs_connecting_lines.append(pair_line)
+        if neighbor != -1:
+            p1 = (p1_x, p1_y)
+            p2 = (paired_Burgers_field[neighbor][0][0], paired_Burgers_field[neighbor][0][1])
+            if utils.vec_length_from_2_points(p1, p2) < boundaries[0] / 2:
+                pair_line = LineString([p1, p2])
+                pairs_connecting_lines.append(pair_line)
+            else:
+                pair_line_1, pair_line_2 = pair_points_through_boundary(p1, p2, boundaries, theta)
+                pairs_connecting_lines.append(pair_line_1)
+                pairs_connecting_lines.append(pair_line_2)
 
     for (u, v), color, in_circuit in list_of_edges:
         point1 = points[u]
@@ -209,10 +217,46 @@ def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burger
     return crossed_edges
 
 
+def pair_points_through_boundary(p1, p2, boundaries, theta):
+    p1, p2 = utils.rotate_points_by_angle([p1, p2], -theta)
+    which_boundary = [0, 0]
+
+    dx = np.array(p1) - p2  # direct vector
+    for i in range(2):
+        L = boundaries[i]
+        if (dx[i] + L) ** 2 < dx[i] ** 2:
+            which_boundary[i] = L
+        if (dx[i] - L) ** 2 < dx[i] ** 2:
+            which_boundary[i] = -L
+
+    p1_b = p1 + which_boundary
+    p2_b = p2 - which_boundary
+    boundary_1 = intersect_with_boundaries(p1, p2_b, boundaries)
+    boundary_2 = intersect_with_boundaries(p1_b, p2, boundaries)
+
+    p1, p2, b1, b2 = utils.rotate_points_by_angle([p1, p2, boundary_1, boundary_2], theta)
+    line_1 = LineString([p1, b1])
+    line_2 = LineString([p2, b2])
+
+    return line_1, line_2
+
+
+def intersect_with_boundaries(p1, p2, boundaries):
+
+    boundary_pairs = [[[0, 0], [0, boundaries[1]]],
+                      [[0, 0], [boundaries[0], 0]],
+                      [[0, boundaries[1]], [boundaries[0], boundaries[1]]],
+                      [[boundaries[0], 0], [boundaries[0], boundaries[1]]]]
+
+    for pair in boundary_pairs:
+        if utils.where_2_lines_intersect(p1, p2, pair[0], pair[1]):
+            return utils.where_2_lines_intersect(p1, p2, pair[0], pair[1])
+
+
 def to_vecs(vec_with_index):
     vecs = []
     for [p1_x, p1_y, p2_x, p2_y], neighbor in vec_with_index:
-        vecs.append([p1_x, p1_y, p2_x, p2_y])
+        vecs.append([p1_x, p1_y])
 
     return vecs
 
