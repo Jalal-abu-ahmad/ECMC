@@ -16,7 +16,9 @@ class Graph:
 
     # Function to print a BFS of graph
     def BFS(self, s):
-
+        flag = True
+        if s == 0:
+            flag = False
         # Mark all the vertices as not visited
         visited = [False] * (max(self.graph) + 1)
 
@@ -31,7 +33,8 @@ class Graph:
             # Dequeue a vertex from
             # queue and print it
             s = queue.pop(0)
-            print(s, end=" ")
+            if flag:
+                print(s, end=" ")
 
             # Get all adjacent vertices of the
             # dequeued vertex s.
@@ -56,18 +59,18 @@ class Graph:
 
         while queue:
             node = queue.pop(0)
-            local_sign *= -1
-            print(node, end=" ")
+            # print(node, end=" ")
             for i in self.graph[node]:
                 if not visited[i]:
                     queue.append(i)
                     visited[i] = True
-                    sign[i] = local_sign
+                    sign[i] = -1 * sign[node]
                 else:
-                    if sign[i] != local_sign:
+                    if sign[i] != -1 * sign[node]:
+                        print("so sad")
                         non_compatible += 1
 
         if non_compatible == 0:
             print("connected component fully bipartite")
 
-        return non_compatible, sign
+        return non_compatible, sign, visited

@@ -52,3 +52,46 @@ Calc correlations: False
 Calc mean: False
 Iteration 0 / 2
 Backend MacOSX is interactive backend. Turning interactive mode on.
+
+
+
+-----------
+Date: 2023-08-25
+Type: BurgersSquare14
+Correlation arguments:{'randomize': False, 'time_limit': 172800}
+Calc correlations: False
+Calc mean: False
+Iteration 0 / 2
+Optimization terminated successfully.
+         Current function value: -37.347126
+         Iterations: 36
+         Function evaluations: 70
+Optimization terminated successfully.
+         Current function value: -47.352439
+         Iterations: 17
+         Function evaluations: 33
+Optimization terminated successfully.
+         Current function value: -36.766617
+         Iterations: 18
+         Function evaluations: 33
+Optimization terminated successfully.
+         Current function value: -47.352439
+         Iterations: 17
+         Function evaluations: 33
+Iteration 1 / 2
+Optimization terminated successfully.
+         Current function value: -100.000000
+         Iterations: 14
+         Function evaluations: 29
+Optimization terminated successfully.
+         Current function value: -100.000000
+         Iterations: 12
+         Function evaluations: 25
+Optimization terminated successfully.
+         Current function value: -100.000000
+         Iterations: 12
+         Function evaluations: 25
+Optimization terminated successfully.
+         Current function value: -100.000000
+         Iterations: 12
+         Function evaluations: 25

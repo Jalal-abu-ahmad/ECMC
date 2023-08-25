@@ -59,13 +59,13 @@ def keep_within_boundaries_and_non_isolated(G, list_of_edges, points, boundaries
 
 def check_connectivity(G, vertices, edges):
     i = 0
-    visited = [[G.BFS(0)]]
-    node = not_all_visited(visited[i])
+    visited = [G.BFS(0)]
+    node = not_all_visited(visited)
 
     while node != -1:
         i += 1
         visited.append(G.BFS(node))
-        node = not_all_visited(visited[i])
+        node = not_all_visited(visited)
 
     print("Graph has", len(visited), "connected componentes")
 
@@ -74,22 +74,32 @@ def check_connectivity(G, vertices, edges):
 
 def not_all_visited(visited):
 
-    for node in range(len(visited)):
-        if not visited[node]:
+    full_visited = visited[0]
+    for i in range(len(visited)):
+        full_visited = [full_visited[j] or visited[i][j] for j in range(len(visited[0]))]
+
+    for node in range(len(full_visited)):
+        if not full_visited[node]:
             return node
     return -1
 
 
 def check_bipartiteness(G, vertices, edges, visited):
-    non_compatible, sign_0 = G.check_if_Bipartite_BFS(0)
+
+    i = 0
+    non_compatible_0, sign_0, visited_0 = G.check_if_Bipartite_BFS(0)
+    visited = [visited_0]
+    node = not_all_visited(visited)
     sign = [sign_0]
-    print("non =", non_compatible)
-    for i in range(1, len(visited)):
-        node = not_all_visited(visited[i])
-        if node != -1:
-            non_compatible, sign_i = G.check_if_Bipartite_BFS(node)
-            print("non =", non_compatible)
-            sign.append(sign_i)
+    print("non =", non_compatible_0)
+
+    while node != -1:
+        i += 1
+        non_compatible_i, sign_i, visited_i = G.check_if_Bipartite_BFS(node)
+        visited.append(visited_i)
+        sign.append(sign_i)
+        print("non =", non_compatible_i)
+        node = not_all_visited(visited)
 
     return sign
 
