@@ -33,8 +33,8 @@ class Graph:
             # Dequeue a vertex from
             # queue and print it
             s = queue.pop(0)
-            if flag:
-                print(s)
+            # if flag:
+            #     print(s)
 
             # Get all adjacent vertices of the
             # dequeued vertex s.
@@ -66,7 +66,6 @@ class Graph:
                     sign[i] = -1 * sign[node]
                 else:
                     if sign[i] != -1 * sign[node]:
-                        print("so sad")
                         non_compatible += 1
 
         if non_compatible == 0:

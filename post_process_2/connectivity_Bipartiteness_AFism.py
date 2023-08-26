@@ -13,23 +13,8 @@ def connectivity_Bipartiteness_AFism(list_of_edges, points_with_z, boundaries, t
     vertices_sign = check_bipartiteness(G, vertices, edges, visited)
     calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z)
 
-    print("plotting edges")
-    for (p1, p2) in edges:
-        x1, y1 = vertices[p1][0], vertices[p1][1]
-        x2, y2 = vertices[p2][0], vertices[p2][1]
-
-        plt.plot([x1, x2], [y1, y2], color='grey', alpha=1)
-        plt.plot(x1, y1, 'bo', markersize=5)
-        plt.plot(x2, y2, 'bo', markersize=5)
-
-    utils.plot_boundaries(boundaries, theta)
-    plt.axis([130, 200, 360, 410])
-    plt.gca().set_aspect('equal')
-    plt.show()
-
 
 def keep_within_boundaries_and_non_isolated(G, list_of_edges, points, boundaries, theta):
-
     edges = []
     N = len(points)
     vertices = points
@@ -73,7 +58,6 @@ def check_connectivity(G, vertices, edges):
 
 
 def not_all_visited(visited):
-
     full_visited = visited[0]
     for i in range(len(visited)):
         full_visited = [full_visited[j] or visited[i][j] for j in range(len(visited[0]))]
@@ -85,9 +69,8 @@ def not_all_visited(visited):
 
 
 def check_bipartiteness(G, vertices, edges, visited):
-
     i = 0
-    non_compatible_0, sign_0, visited_0 = G.check_if_Bipartite_BFS(0)
+    non_compatible_0, sign_0, visited_0 = G.check_if_Bipartite_BFS(5)
     visited = [visited_0]
     node = not_all_visited(visited)
     sign = [sign_0]
@@ -105,7 +88,6 @@ def check_bipartiteness(G, vertices, edges, visited):
 
 
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
-
     order_parameter = 0
     for component in vertices_sign:
         i = 0
@@ -119,14 +101,13 @@ def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z
             down = component[i]
         for vertex in range(len(component)):
             if component[vertex] != 0:
-                if vertices[vertex][2] > l_z/2:
+                if vertices[vertex][2] > l_z / 2:
                     order_parameter += up * component[vertex]
                 else:
                     order_parameter += down * component[vertex]
 
-    AF_order_parameter = order_parameter/len(vertices)
+    AF_order_parameter = order_parameter / len(vertices)
 
     print("order parameter =", AF_order_parameter)
 
     return AF_order_parameter
-

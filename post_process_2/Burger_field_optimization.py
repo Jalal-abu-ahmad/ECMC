@@ -17,14 +17,14 @@ def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, 
 
     paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
     second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta)
-    isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta)
+    pairs_connecting_lines = isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta)
 
     print("no of up vectors=", len(up_vecs))
     print("no of down vectors=", len(down_vecs))
     print("no of right vectors=", len(right_vecs))
     print("no of left vectors=", len(left_vecs))
 
-    return paired_Burgers_field
+    return paired_Burgers_field, pairs_connecting_lines
 
 
 def clean_Burger_field(Burger_field, boundaries, theta):
@@ -100,8 +100,8 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
     right = np.array(right_vecs)[:, [0, 1]].tolist()
     left = np.array(left_vecs)[:, [0, 1]].tolist()
 
-    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta)
-    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta)
+    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 13)
+    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 13)
 
     paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
     paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
@@ -118,7 +118,7 @@ def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired
 
     full_vecs = unpaired_up_down + unpaired_right_left
 
-    pairing = pairing_two_sides(left, right, boundaries, a, theta)
+    pairing = pairing_two_sides(left, right, boundaries, a, theta, 10)
 
     for (u, v) in pairing:
         paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]
@@ -152,7 +152,7 @@ def make_paired_Burger_field(first_side, second_side, pairing, offset):
     return paired, unpaired
 
 
-def pairing_two_sides(first_side, second_side, boundaries, a, theta):
+def pairing_two_sides(first_side, second_side, boundaries, a, theta, coeff):
 
     """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
     “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
@@ -165,7 +165,7 @@ def pairing_two_sides(first_side, second_side, boundaries, a, theta):
     for i in range(len(first_side)):
         for j in range(len(second_side)):
             distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
-            if 10 * a > distance > 0:
+            if coeff * a > distance > 0:
                 weighted_edges.append([i, len(first_side)+j, distance])
 
     G = nx.Graph()
@@ -178,11 +178,13 @@ def pairing_two_sides(first_side, second_side, boundaries, a, theta):
 
 def isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta):
 
-    crossed_edges_indices = return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points,
+    crossed_edges_indices, pairs_connecting_lines = return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points,
                                                                             boundaries, theta)
 
     for index in crossed_edges_indices:
         list_of_edges[index][2] = True
+
+    return pairs_connecting_lines
 
 
 def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burgers_field, points, boundaries, theta):
@@ -214,7 +216,7 @@ def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burger
 
     crossed_edges = list(set(crossings_gpd.index))
 
-    return crossed_edges
+    return crossed_edges, pairs_connecting_lines
 
 
 def pair_points_through_boundary(p1, p2, boundaries, theta):

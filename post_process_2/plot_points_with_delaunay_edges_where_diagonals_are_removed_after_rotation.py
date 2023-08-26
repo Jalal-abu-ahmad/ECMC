@@ -1,6 +1,7 @@
 import numpy as np
 import utils
-from post_process_2 import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiteness_AFism
+from post_process_2 import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiteness_AFism, \
+    testing
 import matplotlib.pyplot as plt
 
 
@@ -42,15 +43,15 @@ def read_from_file():
     mac = True
 
     if mac:
-        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
-        # file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
+        # file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
+        file_path = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     else:
         file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.81_AF_square_ECMC/94363239"
         # file_path = "C:/Users/Galal/ECMC/N=90000_h=0.8_rhoH=0.8_AF_square_ECMC/92549977"
 
     N = 90000
-    rho_H = 0.81
+    rho_H = 0.8
     h = 0.8
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
     # a = L / (np.sqrt(N) - 1)
@@ -75,12 +76,13 @@ def read_from_file():
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-    optimized_Burgers_field = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
+    optimized_Burgers_field, pairs_connecting_lines = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
 
     connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
 
     utils.plot_boundaries([L, L], global_theta)
-    utils.plot_burger_field(optimized_Burgers_field, [L, L], True)
+    utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
+    # plt.show()
     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
     utils.plot_colored_points(aligned_points_with_z, l_z, is_point_in_dislocation)
