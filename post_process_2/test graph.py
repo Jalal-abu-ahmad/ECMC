@@ -24,9 +24,28 @@ g.addEdge(3, 4)
 g.addEdge(4, 5)
 g.addEdge(2, 6)
 g.addEdge(4, 6)
-
+g.addEdge(3, 12)
+g.addEdge(4, 13)
+g.addEdge(5, 14)
+g.addEdge(5, 10)
+g.addEdge(6, 7)
 g.addEdge(7, 8)
-g.addEdge(7, 9)
+g.addEdge(9, 11)
+g.addEdge(8, 9)
+g.addEdge(10, 11)
+g.addEdge(10, 15)
+g.addEdge(10, 17)
+g.addEdge(13, 14)
+g.addEdge(14, 18)
+g.addEdge(15, 16)
+g.addEdge(16, 17)
+g.addEdge(16, 19)
+g.addEdge(18, 20)
+g.addEdge(21, 19)
+g.addEdge(21, 22)
+g.addEdge(20, 22)
+g.addEdge(20, 23)
+g.addEdge(23, 24)
 
 
 i = 0
@@ -41,4 +60,5 @@ while node != -1:
 print("Graph has", len(visited), "connected componentes")
 
 
-g.check_if_Bipartite_BFS(0)
+non_compatible, sign, visited = g.check_if_Bipartite_BFS(0)
+print(sign)

@@ -59,6 +59,7 @@ def check_connectivity(G, vertices, edges):
 
 def not_all_visited(visited):
     full_visited = visited[0]
+
     for i in range(len(visited)):
         full_visited = [full_visited[j] or visited[i][j] for j in range(len(visited[0]))]
 
@@ -69,15 +70,14 @@ def not_all_visited(visited):
 
 
 def check_bipartiteness(G, vertices, edges, visited):
-    i = 0
-    non_compatible_0, sign_0, visited_0 = G.check_if_Bipartite_BFS(5)
+
+    non_compatible_0, sign_0, visited_0 = G.check_if_Bipartite_BFS(0)
     visited = [visited_0]
     node = not_all_visited(visited)
     sign = [sign_0]
     print("non =", non_compatible_0)
 
     while node != -1:
-        i += 1
         non_compatible_i, sign_i, visited_i = G.check_if_Bipartite_BFS(node)
         visited.append(visited_i)
         sign.append(sign_i)
@@ -88,7 +88,26 @@ def check_bipartiteness(G, vertices, edges, visited):
 
 
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
+
+    order_parameter, visited_0 = G.calculate_AF_order_parameter(0, 0, vertices, l_z)
+    visited = [visited_0]
+    node = not_all_visited(visited)
+
+    while node != -1:
+        order_parameter, visited_i = G.calculate_AF_order_parameter(node, order_parameter, vertices, l_z)
+        visited.append(visited_i)
+        node = not_all_visited(visited)
+
+    AF_order_parameter = order_parameter / len(vertices)
+
+    print("order parameter =", AF_order_parameter)
+
+    return AF_order_parameter
+
+
+def calculate_AF_order_parameter_old(G, vertices, edges, vertices_sign, visited, l_z):
     order_parameter = 0
+    previous = ''
     for component in vertices_sign:
         i = 0
         while component[i] == 0:
