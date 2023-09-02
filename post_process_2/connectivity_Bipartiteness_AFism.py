@@ -89,6 +89,35 @@ def check_bipartiteness(G, vertices, edges, visited):
 
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
 
+    full_sign = vertices_sign[0]
+    order_parameter = 0
+    for i in range(len(visited)):
+        full_sign = [full_sign[j] + vertices_sign[i][j] for j in range(len(vertices_sign[0]))]
+
+    for [u, v] in edges:
+
+        if vertices[u][2] > l_z / 2 and vertices[v][2] > l_z / 2 \
+                or vertices[u][2] < l_z / 2 and vertices[v][2] < l_z / 2:
+            if full_sign[u] != full_sign[v]:
+                order_parameter += 0  # +1 and -1
+            else:
+                print("WTF?")
+                order_parameter += 1
+        else:
+            if full_sign[u] != full_sign[v]:
+                order_parameter += 1
+            else:
+                order_parameter += 0.5
+
+    AF_order_parameter = order_parameter / len(edges)
+
+    print("order parameter =", AF_order_parameter)
+
+    return AF_order_parameter
+
+
+def calculate_AF_order_parameter_old_2(G, vertices, edges, vertices_sign, visited, l_z):
+
     order_parameter, visited_0 = G.calculate_AF_order_parameter(0, 0, vertices, l_z)
     visited = [visited_0]
     node = not_all_visited(visited)

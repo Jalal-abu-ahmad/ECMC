@@ -5,7 +5,7 @@ from shapely.geometry import Point, Polygon, LineString
 from scipy.optimize import linear_sum_assignment
 import networkx as nx
 import geopandas as gpd
-from post_process_2 import utils
+from post_process_2 import utils, hiii
 
 epsilon = 0.00001
 
@@ -100,11 +100,13 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
     right = np.array(right_vecs)[:, [0, 1]].tolist()
     left = np.array(left_vecs)[:, [0, 1]].tolist()
 
-    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 5)
-    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 5)
+    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 10)
+    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 10)
 
     paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
     paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
+
+    hiii.hii(unpaired_right_left, unpaired_up_down)
 
     paired_Burgers_field = paired_up_down + paired_right_left
 
@@ -118,7 +120,7 @@ def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired
 
     full_vecs = unpaired_up_down + unpaired_right_left
 
-    pairing = pairing_two_sides(left, right, boundaries, a, theta, 10 )
+    pairing = pairing_two_sides(left, right, boundaries, a, theta, 10)
 
     for (u, v) in pairing:
         paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]

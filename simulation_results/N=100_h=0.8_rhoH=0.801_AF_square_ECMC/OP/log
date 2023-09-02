@@ -95,3 +95,25 @@ Optimization terminated successfully.
          Current function value: -100.000000
          Iterations: 12
          Function evaluations: 25
+
+
+
+-----------
+Date: 2023-09-02
+Type: BurgersSquare14
+Correlation arguments:{'randomize': False, 'time_limit': 172800}
+Calc correlations: False
+Calc mean: False
+Iteration 0 / 2
+Iteration 1 / 2
+
+
+
+-----------
+Date: 2023-09-02
+Type: BurgersSquare14
+Correlation arguments:{'randomize': False, 'time_limit': 172800}
+Calc correlations: False
+Calc mean: False
+Iteration 0 / 2
+Iteration 1 / 2

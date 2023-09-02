@@ -97,6 +97,7 @@ class Graph:
                     if vertices[node][2] > l_z/2 and vertices[i][2] > l_z/2 \
                             or vertices[node][2] < l_z/2 and vertices[i][2] < l_z/2:
                         sign[i] = sign[node]
+                        order_parameter += -1
                     else:
                         sign[i] = -1 * sign[node]
 
