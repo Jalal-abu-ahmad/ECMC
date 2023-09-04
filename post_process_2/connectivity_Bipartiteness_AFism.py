@@ -88,6 +88,34 @@ def check_bipartiteness(G, vertices, edges, visited):
 
 
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
+    order_parameter = 0
+    for component in vertices_sign:
+        i = 0
+        while component[i] == 0:
+            i += 1
+        if vertices[i][2] > l_z / 2:
+            up = component[i]
+            down = -1 * component[i]
+        else:
+            up = -1 * component[i]
+            down = component[i]
+        for vertex in range(len(component)):
+            if component[vertex] != 0:
+                if vertices[vertex][2] > l_z / 2:
+                    order_parameter += up * component[vertex]
+                else:
+                    order_parameter += down * component[vertex]
+
+    AF_order_parameter = order_parameter / len(vertices)
+
+    print("order parameter =", AF_order_parameter)
+
+    return AF_order_parameter
+
+#######################################################################################################################
+
+
+def calculate_AF_order_parameter_old(G, vertices, edges, vertices_sign, visited, l_z):
 
     full_sign = vertices_sign[0]
     order_parameter = 0
@@ -116,46 +144,4 @@ def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z
     return AF_order_parameter
 
 
-def calculate_AF_order_parameter_old_2(G, vertices, edges, vertices_sign, visited, l_z):
 
-    order_parameter, visited_0 = G.calculate_AF_order_parameter(0, 0, vertices, l_z)
-    visited = [visited_0]
-    node = not_all_visited(visited)
-
-    while node != -1:
-        order_parameter, visited_i = G.calculate_AF_order_parameter(node, order_parameter, vertices, l_z)
-        visited.append(visited_i)
-        node = not_all_visited(visited)
-
-    AF_order_parameter = order_parameter / len(vertices)
-
-    print("order parameter =", AF_order_parameter)
-
-    return AF_order_parameter
-
-
-def calculate_AF_order_parameter_old(G, vertices, edges, vertices_sign, visited, l_z):
-    order_parameter = 0
-    previous = ''
-    for component in vertices_sign:
-        i = 0
-        while component[i] == 0:
-            i += 1
-        if vertices[i][2] > l_z / 2:
-            up = component[i]
-            down = -1 * component[i]
-        else:
-            up = -1 * component[i]
-            down = component[i]
-        for vertex in range(len(component)):
-            if component[vertex] != 0:
-                if vertices[vertex][2] > l_z / 2:
-                    order_parameter += up * component[vertex]
-                else:
-                    order_parameter += down * component[vertex]
-
-    AF_order_parameter = order_parameter / len(vertices)
-
-    print("order parameter =", AF_order_parameter)
-
-    return AF_order_parameter
