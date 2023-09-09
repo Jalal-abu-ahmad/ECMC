@@ -4,6 +4,10 @@ import os
 import re
 import csv
 
+import numpy as np
+
+from post_process_2 import post_process_main_file
+
 prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
 code_prefix = "./"
 
@@ -32,11 +36,13 @@ def create_op_dir(sim):
 
 
 def main():
+
+    fields = ['file name', 'AF order parameter', 'no of connected components', 'Bipartiteness']
     sims = [d for d in os.listdir(prefix) if d.startswith('N=') and os.path.isdir(os.path.join(prefix, d))]
 
     for sim in sims:
         create_op_dir(sim)
-    f = open(os.path.join(code_prefix, 'post_process_list.txt'), 'wt')
+    f = open(os.path.join(code_prefix, 'post_process_list.csv'), 'wt')
     try:
         writer = csv.writer(f, lineterminator='\n')
         for sim_name in sims:
@@ -48,6 +54,24 @@ def main():
     finally:
         f.close()
         # os.system("condor_submit post_process.sub")
+
+    f = open(os.path.join(code_prefix, 'post_process_list.csv'), 'r')
+    folders_to_run = csv.reader(f)
+
+    for [folder] in folders_to_run:
+        N, h, rhoH, ic = params_from_name(folder)
+        join_path = os.path.join(prefix, folder+'/')
+        files = [d for d in os.listdir(join_path) if d.isnumeric()]
+        destination = open(os.path.join(join_path, 'post_process_results' + folder + '.csv'), 'wt')
+        writer = csv.writer(destination, lineterminator='\n')
+        writer.writerow(fields)
+        for file in files:
+            parameters = post_process_main_file.read_from_file(N, rhoH, h, join_path + file, destination)
+            row = [file] + list(parameters)
+            writer.writerow(row)
+            destination.flush()
+
+        destination.close()
 
 
 if __name__ == "__main__":

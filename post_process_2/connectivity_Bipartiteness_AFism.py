@@ -9,9 +9,12 @@ def connectivity_Bipartiteness_AFism(list_of_edges, points_with_z, boundaries, t
 
     vertices, edges = keep_within_boundaries_and_non_isolated(G, list_of_edges, points_with_z, boundaries, theta)
 
-    visited = check_connectivity(G, vertices, edges)
-    vertices_sign = check_bipartiteness(G, vertices, edges, visited)
-    calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z)
+    visited, no_of_connected_components = check_connectivity(G, vertices, edges)
+    vertices_sign, bipartite = check_bipartiteness(G, vertices, edges, visited)
+    AF_order_parameter = calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z)
+
+    parameters = map(str, [AF_order_parameter, no_of_connected_components, bipartite])
+    return parameters
 
 
 def keep_within_boundaries_and_non_isolated(G, list_of_edges, points, boundaries, theta):
@@ -54,7 +57,7 @@ def check_connectivity(G, vertices, edges):
 
     print("Graph has", len(visited), "connected componentes")
 
-    return visited
+    return visited, len(visited)
 
 
 def not_all_visited(visited):
@@ -70,8 +73,10 @@ def not_all_visited(visited):
 
 
 def check_bipartiteness(G, vertices, edges, visited):
-
+    bipartite = True
     non_compatible_0, sign_0, visited_0 = G.check_if_Bipartite_BFS(0)
+    if non_compatible_0 != 0:
+        bipartite = False
     visited = [visited_0]
     node = not_all_visited(visited)
     sign = [sign_0]
@@ -79,12 +84,14 @@ def check_bipartiteness(G, vertices, edges, visited):
 
     while node != -1:
         non_compatible_i, sign_i, visited_i = G.check_if_Bipartite_BFS(node)
+        if non_compatible_i != 0:
+            bipartite = False
         visited.append(visited_i)
         sign.append(sign_i)
         print("non =", non_compatible_i)
         node = not_all_visited(visited)
 
-    return sign
+    return sign, bipartite
 
 
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
