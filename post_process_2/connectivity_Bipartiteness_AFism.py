@@ -44,17 +44,20 @@ def keep_within_boundaries_and_non_isolated(G, list_of_edges, points, boundaries
 
 def check_connectivity(G, vertices, edges):
     i = 0
+    no_of_connected_components = 1
     visited = [G.BFS(0)]
     node = not_all_visited(visited)
 
     while node != -1:
         i += 1
         visited.append(G.BFS(node))
+        if G.graph[node]:
+            no_of_connected_components += 1
         node = not_all_visited(visited)
 
     print("Graph has", len(visited), "connected componentes")
 
-    return visited, len(visited)
+    return visited, no_of_connected_components
 
 
 def not_all_visited(visited):
