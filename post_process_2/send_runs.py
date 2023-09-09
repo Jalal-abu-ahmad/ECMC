@@ -1,13 +1,18 @@
 #!/Local/ph_daniel/anaconda3/bin/python -u
 
+import csv
 import os
 import re
-import csv
-import numpy as np
+
 import post_process_main_file
 
-prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
-code_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
+mac = False
+
+if mac:
+    prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+else:
+    prefix = "C:/Users/Galal/ECMC/"
+code_prefix = "./"
 
 
 def params_from_name(name):
@@ -51,7 +56,7 @@ def main():
 
     finally:
         f.close()
-        #os.system("condor_submit post_process_run.sub")
+        # os.system("condor_submit post_process_run.sub")
 
     f = open(os.path.join(code_prefix, 'post_process_files_to_run.csv'), 'r')
     folders_to_run = csv.reader(f)

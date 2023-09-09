@@ -1,10 +1,11 @@
+import geopandas as gpd
+import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
-from sklearn.neighbors import kneighbors_graph
-from shapely.geometry import Point, Polygon, LineString
 from scipy.optimize import linear_sum_assignment
-import networkx as nx
-import geopandas as gpd
+from shapely.geometry import Point, Polygon, LineString
+from sklearn.neighbors import kneighbors_graph
+
 import utils
 
 epsilon = 0.00001

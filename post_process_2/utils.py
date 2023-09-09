@@ -1,9 +1,9 @@
 import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph
-import Burger_field_optimization
 
 
 def less_first(a, b):

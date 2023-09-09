@@ -1,10 +1,11 @@
 import csv
 
 import numpy as np
+
+import Burger_field_optimization
+import burger_field_calculation
+import connectivity_Bipartiteness_AFism
 import utils
-import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiteness_AFism, \
-    testing
-import matplotlib.pyplot as plt
 
 
 def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):

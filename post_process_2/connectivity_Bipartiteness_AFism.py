@@ -1,7 +1,4 @@
-from post_process_2 import utils
-import matplotlib.pyplot as plt
 import Graph
-import numpy as np
 
 
 def connectivity_Bipartiteness_AFism(list_of_edges, points_with_z, boundaries, theta, l_z):
