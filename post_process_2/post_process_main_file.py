@@ -2,7 +2,7 @@ import csv
 
 import numpy as np
 import utils
-from post_process_2 import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiteness_AFism, \
+import burger_field_calculation, Burger_field_optimization, connectivity_Bipartiteness_AFism, \
     testing
 import matplotlib.pyplot as plt
 

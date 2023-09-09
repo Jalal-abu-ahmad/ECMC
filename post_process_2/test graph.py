@@ -1,5 +1,5 @@
 import numpy as np
-from post_process_2 import Graph
+import Graph
 
 
 def not_all_visited(visited):

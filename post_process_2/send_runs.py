@@ -3,13 +3,11 @@
 import os
 import re
 import csv
-
 import numpy as np
+import post_process_main_file
 
-from post_process_2 import post_process_main_file
-
-prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
-code_prefix = "./"
+prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+code_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
 
 
 def params_from_name(name):
@@ -42,7 +40,7 @@ def main():
 
     for sim in sims:
         create_op_dir(sim)
-    f = open(os.path.join(code_prefix, 'post_process_list.csv'), 'wt')
+    f = open(os.path.join(code_prefix, 'post_process_files_to_run.csv'), 'wt')
     try:
         writer = csv.writer(f, lineterminator='\n')
         for sim_name in sims:
@@ -53,9 +51,9 @@ def main():
 
     finally:
         f.close()
-        # os.system("condor_submit post_process.sub")
+        #os.system("condor_submit post_process_run.sub")
 
-    f = open(os.path.join(code_prefix, 'post_process_list.csv'), 'r')
+    f = open(os.path.join(code_prefix, 'post_process_files_to_run.csv'), 'r')
     folders_to_run = csv.reader(f)
 
     for [folder] in folders_to_run:

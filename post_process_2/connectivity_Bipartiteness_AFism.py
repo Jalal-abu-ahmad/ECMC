@@ -1,6 +1,6 @@
 from post_process_2 import utils
 import matplotlib.pyplot as plt
-from post_process_2 import Graph
+import Graph
 import numpy as np
 
 

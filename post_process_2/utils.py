@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph
-from post_process_2 import Burger_field_optimization
+import Burger_field_optimization
 
 
 def less_first(a, b):
