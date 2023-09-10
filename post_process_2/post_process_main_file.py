@@ -1,7 +1,5 @@
 import csv
-
 import numpy as np
-
 import Burger_field_optimization
 import burger_field_calculation
 import connectivity_Bipartiteness_AFism
