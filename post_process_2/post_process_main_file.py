@@ -1,5 +1,7 @@
 import csv
 import numpy as np
+from matplotlib import pyplot as plt
+
 import Burger_field_optimization
 import burger_field_calculation
 import connectivity_Bipartiteness_AFism
@@ -87,8 +89,9 @@ def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
     # utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
     # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
     # utils.plot_colored_points(aligned_points_with_z, l_z, is_point_in_dislocation)
-
+    plt.show()
     return parameters
 
-if __name__ == "__main__":
-    read_from_file()
+
+# if __name__ == "__main__":
+#     read_from_file()

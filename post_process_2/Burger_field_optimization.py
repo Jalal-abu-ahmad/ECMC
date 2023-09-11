@@ -7,6 +7,7 @@ from shapely.geometry import Point, Polygon, LineString
 from sklearn.neighbors import kneighbors_graph
 
 import utils
+import hiii
 
 epsilon = 0.00001
 
@@ -101,11 +102,13 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
     right = np.array(right_vecs)[:, [0, 1]].tolist()
     left = np.array(left_vecs)[:, [0, 1]].tolist()
 
-    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 5)
-    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 5)
+    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 6)
+    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 6)
 
     paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
     paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
+
+    hiii.hii(unpaired_right_left, unpaired_up_down)
 
     paired_Burgers_field = paired_up_down + paired_right_left
 

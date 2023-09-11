@@ -12,6 +12,7 @@ if mac:
     prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
 else:
     prefix = "C:/Users/Galal/ECMC/"
+
 code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
 
 
@@ -64,7 +65,7 @@ def main():
     for [folder] in folders_to_run:
         N, h, rhoH, ic = params_from_name(folder)
         join_path = os.path.join(prefix, folder+'/')
-        files = [d for d in os.listdir(join_path) if d.isnumeric()]
+        files = [d for d in os.listdir(join_path) if d.isnumeric() and d == '90427221']
         destination = open(os.path.join(code_prefix, 'post_process_results' + folder + '.csv'), 'wt')
         writer = csv.writer(destination, lineterminator='\n')
         writer.writerow(fields)

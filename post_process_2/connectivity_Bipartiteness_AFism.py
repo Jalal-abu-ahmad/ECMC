@@ -53,7 +53,7 @@ def check_connectivity(G, vertices, edges):
         i += 1
         visited_i, component = G.BFS(node)
         visited.append(visited_i)
-        if component > 20:
+        if component > 300:
             no_of_connected_components += 1
         node = not_all_visited(visited)
 
