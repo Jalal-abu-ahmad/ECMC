@@ -92,5 +92,6 @@ def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
 
     return parameters
 
+
 if __name__ == "__main__":
     read_from_file()

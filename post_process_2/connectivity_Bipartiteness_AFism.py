@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 import Graph
 
 
@@ -8,7 +10,7 @@ def connectivity_Bipartiteness_AFism(list_of_edges, points_with_z, boundaries, t
 
     visited, no_of_connected_components = check_connectivity(G, vertices, edges)
     vertices_sign, bipartite = check_bipartiteness(G, vertices, edges, visited)
-    AF_order_parameter = calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z)
+    AF_order_parameter, vertices_color = calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z)
 
     parameters = map(str, [AF_order_parameter, no_of_connected_components, bipartite])
     return parameters
@@ -95,29 +97,49 @@ def check_bipartiteness(G, vertices, edges, visited):
 
 
 def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z):
+    vertices_color = [None] * len(vertices)
     order_parameter = 0
+    if vertices[0][2] > l_z / 2:
+        up = vertices_sign[0][0]
+        down = -1 * vertices_sign[0][0]
+    else:
+        up = -1 * vertices_sign[0][0]
+        down = vertices_sign[0][0]
+
     for component in vertices_sign:
-        i = 0
-        while component[i] == 0:
-            i += 1
-        if vertices[i][2] > l_z / 2:
-            up = component[i]
-            down = -1 * component[i]
-        else:
-            up = -1 * component[i]
-            down = component[i]
+        # i = 0
+        # while component[i] == 0:
+        #     i += 1
+        # if vertices[i][2] > l_z / 2:
+        #     up = component[i]
+        #     down = -1 * component[i]
+        # else:
+        #     up = -1 * component[i]
+        #     down = component[i]
         for vertex in range(len(component)):
             if component[vertex] != 0:
                 if vertices[vertex][2] > l_z / 2:
-                    order_parameter += up * component[vertex]
+                    vertex_order_parameter = up * component[vertex]
                 else:
-                    order_parameter += down * component[vertex]
+                    vertex_order_parameter = down * component[vertex]
+                order_parameter += vertex_order_parameter
+                if vertex_order_parameter == 1:
+                    vertices_color[vertex] = 'go'
+                else:
+                    vertices_color[vertex] = 'ro'
 
     AF_order_parameter = order_parameter / len(vertices)
 
     print("order parameter =", AF_order_parameter)
 
-    return AF_order_parameter
+    for i in range(len(vertices)):
+        p_x = vertices[i][0]
+        p_y = vertices[i][1]
+        color = vertices_color[i]
+        plt.plot(p_x, p_y, color, markersize=5)
+    plt.show()
+
+    return AF_order_parameter, vertices_color
 
 #######################################################################################################################
 
@@ -149,6 +171,3 @@ def calculate_AF_order_parameter_old(G, vertices, edges, vertices_sign, visited,
     print("order parameter =", AF_order_parameter)
 
     return AF_order_parameter
-
-
-
