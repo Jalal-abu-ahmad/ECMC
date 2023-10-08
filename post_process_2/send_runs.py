@@ -10,10 +10,10 @@ mac = True
 
 if mac:
     prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+    code_prefix = "/Users/jalal/Desktop/ECMC"
 else:
     prefix = "C:/Users/Galal/ECMC/"
-
-code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
+    code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
 
 
 def params_from_name(name):
