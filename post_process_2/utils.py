@@ -4,6 +4,8 @@ import numpy as np
 from scipy.spatial import Delaunay
 from sklearn.neighbors import kneighbors_graph
 
+epsilon = 0.00001
+
 
 def less_first(a, b):
     return [a, b] if a < b else [b, a]
@@ -111,6 +113,23 @@ def cyc_dist(p1, p2, boundaries):
         L = boundaries[i]
         dsq += min(dx[i] ** 2, (dx[i] + L) ** 2, (dx[i] - L) ** 2)  # find shorter path through B.D.
     return np.sqrt(dsq)
+
+
+def paired_through_boundary(p1, p2, boundaries, theta):
+    p1, p2 = rotate_points_by_angle([p1, p2], -theta)
+    which_boundary = [0, 0]
+
+    dx = np.array(p1) - p2  # direct vector
+    for i in range(2):
+        L = boundaries[i]
+        if (dx[i] + L) ** 2 < dx[i] ** 2:
+            which_boundary[i] = L
+        if (dx[i] - L) ** 2 < dx[i] ** 2:
+            which_boundary[i] = -L
+
+    if which_boundary == [0, 0]:
+        return False
+    return True
 
 
 def nearest_neighbors(N, NNgraph):

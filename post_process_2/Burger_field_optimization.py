@@ -7,6 +7,7 @@ from shapely.geometry import Point, Polygon, LineString
 from sklearn.neighbors import kneighbors_graph
 
 import utils
+import hiii
 
 epsilon = 0.00001
 
@@ -106,6 +107,8 @@ def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
 
     paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
     paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
+
+    # hiii.hii(unpaired_right_left, unpaired_up_down)
 
     paired_Burgers_field = paired_up_down + paired_right_left
 
@@ -236,7 +239,7 @@ def return_indices_of_edges_that_cross_Burgers_pair(list_of_edges, paired_Burger
         if neighbor != -1:
             p1 = (p1_x, p1_y)
             p2 = (paired_Burgers_field[neighbor][0][0], paired_Burgers_field[neighbor][0][1])
-            if utils.vec_length_from_2_points(p1, p2) < boundaries[0] / 2:
+            if not utils.paired_through_boundary(p1, p2, boundaries, theta):
                 pair_line = LineString([p1, p2])
                 pairs_connecting_lines.append(pair_line)
             else:
