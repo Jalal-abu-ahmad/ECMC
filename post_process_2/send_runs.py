@@ -6,7 +6,7 @@ import re
 
 import post_process_main_file
 
-mac = True
+mac = False
 
 if mac:
     prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"

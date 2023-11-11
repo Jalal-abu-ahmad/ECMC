@@ -13,7 +13,7 @@ def connectivity_Bipartiteness_AFism(list_of_edges, points_with_z, boundaries, t
     AF_order_parameter, vertices_color = calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z)
 
     parameters = map(str, [AF_order_parameter, no_of_connected_components, bipartite])
-    return parameters
+    return parameters, AF_order_parameter
 
 
 def keep_within_boundaries_and_non_isolated(G, list_of_edges, points, boundaries, theta):
@@ -134,12 +134,13 @@ def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z
 
     print("order parameter =", AF_order_parameter)
 
-    for i in range(len(vertices)):
-        p_x = vertices[i][0]
-        p_y = vertices[i][1]
-        color = vertices_color[i]
-        plt.plot(p_x, p_y, color, markersize=5)
-    plt.show()
+    if AF_order_parameter < 0.5:
+        for i in range(len(vertices)):
+            p_x = vertices[i][0]
+            p_y = vertices[i][1]
+            color = vertices_color[i]
+            plt.plot(p_x, p_y, color, markersize=5)
+        plt.show()
 
     return AF_order_parameter, vertices_color
 
