@@ -119,20 +119,29 @@ def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired
 
     up_down = to_vecs(unpaired_up_down)
     right_left = to_vecs(unpaired_right_left)
+    unpaired_after_second_optimization = []
 
-    points = up_down + right_left
+    vec_starting_points = up_down + right_left
 
     full_vecs = unpaired_up_down + unpaired_right_left
 
-    pairing = pairing_two_sides_second_optimization(points, full_vecs, boundaries, a, theta, 200)
+    second_pairing = pairing_two_sides_second_optimization(vec_starting_points, full_vecs, boundaries, a, theta, 60)
 
-    for (u, v) in pairing:
+    for (u, v) in second_pairing:
         paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]
         paired_Burgers_field[full_vecs[v][1]][1] = full_vecs[u][1]
 
-    for [p1_x, p1_y, p2_x, p2_y], neighbor in paired_Burgers_field:
+    for idx, [[p1_x, p1_y, p2_x, p2_y], neighbor] in enumerate(paired_Burgers_field):
         if neighbor == -1:
             print([p1_x, p1_y, p2_x, p2_y])
+            unpaired_after_second_optimization.append([[p1_x, p1_y, p2_x, p2_y], idx])
+
+    third_optimization_starting_points = to_vecs(unpaired_after_second_optimization)
+    third_pairing = pairing_two_sides_second_optimization(third_optimization_starting_points, unpaired_after_second_optimization, boundaries, a, theta, 200)
+
+    for (u, v) in third_pairing:
+        paired_Burgers_field[unpaired_after_second_optimization[u][1]][1] = unpaired_after_second_optimization[v][1]
+        paired_Burgers_field[unpaired_after_second_optimization[v][1]][1] = unpaired_after_second_optimization[u][1]
 
 
 def make_paired_Burger_field(first_side, second_side, pairing, offset):
@@ -301,7 +310,7 @@ def intersect_with_boundaries(p1, p2, boundaries):
 
 def to_vecs(vec_with_index):
     vecs = []
-    for [p1_x, p1_y, p2_x, p2_y], neighbor in vec_with_index:
+    for [p1_x, p1_y, p2_x, p2_y], original_index in vec_with_index:
         vecs.append([p1_x, p1_y])
 
     return vecs

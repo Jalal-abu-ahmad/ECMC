@@ -233,7 +233,7 @@ def plot_boundaries(boundaries, global_theta):
         plt.plot(pair[:, 0], pair[:, 1], color="purple")
 
 
-def plot_colored_points(points, l_z, is_point_in_dislocation):
+def plot_colored_points(points, l_z):
     print("coloring the graph")
     for i in range(len(points)):
         p = points[i]
