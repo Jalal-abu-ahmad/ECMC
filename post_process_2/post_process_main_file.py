@@ -85,22 +85,21 @@ def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
 
     parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
 
-
     # if AF_order_parameter < 0.5:
     #
     #     utils.plot_boundaries([L, L], global_theta)
     #     utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
     #     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
-    #     # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
+    #     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
     #     utils.plot_colored_points(aligned_points_with_z, l_z, is_point_in_dislocation)
     #     plt.show()
 
-    utils.plot_boundaries([L, L], global_theta)
-    utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
-    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
-    # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
-    utils.plot_colored_points(aligned_points_with_z, l_z)
-    plt.show()
+    # utils.plot_boundaries([L, L], global_theta)
+    # utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
+    # utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
+    # # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
+    # utils.plot_colored_points(aligned_points_with_z, l_z)
+    # plt.show()
 
     return parameters
 

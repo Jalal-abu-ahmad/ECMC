@@ -65,7 +65,7 @@ def main():
     for [folder] in folders_to_run:
         N, h, rhoH, ic = params_from_name(folder)
         join_path = os.path.join(prefix, folder+'/')
-        files = [d for d in os.listdir(join_path) if d.isnumeric() and d == '67546471']
+        files = [d for d in os.listdir(join_path) if d.isnumeric()] # and d == '67546471']
         destination = open(os.path.join(code_prefix, 'post_process_results' + folder + '.csv'), 'wt')
         writer = csv.writer(destination, lineterminator='\n')
         writer.writerow(fields)
