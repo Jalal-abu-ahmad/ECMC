@@ -17,8 +17,9 @@ def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, 
     Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
     up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
 
-    paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
-    second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta)
+    # paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
+    # second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta)
+    paired_Burgers_field = pair_vec_of_all_kinds(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
     pairs_connecting_lines = isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta)
 
     print("no of up vectors=", len(up_vecs))
@@ -95,6 +96,30 @@ def vecs_classification(vector_field):
     return up_vecs, down_vecs, right_vecs, left_vecs
 
 
+def pair_vec_of_all_kinds(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
+
+    up = np.array(up_vecs)[:, [0, 1]].tolist()
+    down = np.array(down_vecs)[:, [0, 1]].tolist()
+    right = np.array(right_vecs)[:, [0, 1]].tolist()
+    left = np.array(left_vecs)[:, [0, 1]].tolist()
+
+    all_vecs = up + down + right + left
+    all_vecs_full = up_vecs + down_vecs + right_vecs + left_vecs
+    pairing = pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta, 5)
+
+    paired, unpaired = make_paired_Burger_field_all_options(all_vecs_full, pairing)
+
+    second_pairing_points = to_vecs(unpaired)
+
+    second_pairing = pairing_two_sides_all_options(second_pairing_points, all_vecs_full, boundaries, a, theta, 300)
+
+    for (u, v) in second_pairing:
+        paired[second_pairing_points[u][1]][1] = second_pairing_points[v][1]
+        paired[second_pairing_points[v][1]][1] = second_pairing_points[u][1]
+
+    return paired
+
+
 def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
 
     up = np.array(up_vecs)[:, [0, 1]].tolist()
@@ -167,6 +192,28 @@ def make_paired_Burger_field(first_side, second_side, pairing, offset):
     return paired, unpaired
 
 
+def make_paired_Burger_field_all_options(all_vecs_full, pairing):
+
+    unpaired = []
+    unpaired_no = 0
+    paired = [[[0]*4, -1]] * len(all_vecs_full)
+
+    for (u, v) in pairing:
+        paired[u] = [all_vecs_full[u], v]
+        paired[v] = [all_vecs_full[v], u]
+
+    for i in range(len(all_vecs_full)):
+        if paired[i][1] == -1:
+            unpaired_no += 1
+            print(all_vecs_full[i])
+            unpaired.append([all_vecs_full[i], i])
+            paired[i] = [all_vecs_full[i], -1]
+
+    print("no of unpaired dislocations from this batch is", unpaired_no)
+
+    return paired, unpaired
+
+
 def pairing_two_sides(first_side, second_side, boundaries, a, theta, coeff):
 
     """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
@@ -201,6 +248,31 @@ def pairing_two_sides_second_optimization(points, full_vec, boundaries, a, theta
     first_side = utils.rotate_points_by_angle(points, -theta)
     second_side = utils.rotate_points_by_angle(points, -theta)
     full = utils.rotate_Burger_vecs([full_vec[i][0] for i in range(len(full_vec))], -theta)
+
+    for i in range(len(first_side)):
+        for j in range(len(second_side)):
+            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
+            if coeff * a > distance > 0 and not_same_direction(full[i], full[j]):
+                weighted_edges.append([i, j, distance])
+
+    G = nx.Graph()
+    print("pairing up")
+    G.add_weighted_edges_from(weighted_edges)
+    pairing = nx.min_weight_matching(G)
+
+    return pairing
+
+
+def pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta, coeff):
+
+    """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
+    “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
+
+    weighted_edges = []
+
+    first_side = utils.rotate_points_by_angle(all_vecs, -theta)
+    second_side = utils.rotate_points_by_angle(all_vecs, -theta)
+    full = utils.rotate_Burger_vecs(all_vecs_full, -theta)
 
     for i in range(len(first_side)):
         for j in range(len(second_side)):
