@@ -114,8 +114,8 @@ def pair_vec_of_all_kinds(up_vecs, down_vecs, right_vecs, left_vecs, boundaries,
     second_pairing = pairing_two_sides_all_options(second_pairing_points, all_vecs_full, boundaries, a, theta, 300)
 
     for (u, v) in second_pairing:
-        paired[second_pairing_points[u][1]][1] = second_pairing_points[v][1]
-        paired[second_pairing_points[v][1]][1] = second_pairing_points[u][1]
+        paired[unpaired[u][1]][1] = unpaired[v][1]
+        paired[unpaired[v][1]][1] = unpaired[u][1]
 
     return paired
 
