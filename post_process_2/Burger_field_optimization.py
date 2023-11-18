@@ -252,7 +252,7 @@ def pairing_two_sides_second_optimization(points, full_vec, boundaries, a, theta
     for i in range(len(first_side)):
         for j in range(len(second_side)):
             distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
-            if coeff * a > distance > 0 and not_same_direction(full[i], full[j]):
+            if coeff * a > distance > 0 and not_same_point(first_side[i], second_side[j]):
                 weighted_edges.append([i, j, distance])
 
     G = nx.Graph()
@@ -277,7 +277,7 @@ def pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta,
     for i in range(len(first_side)):
         for j in range(len(second_side)):
             distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
-            if coeff * a > distance > 0 and not_same_direction(full[i], full[j]):
+            if coeff * a > distance > 0 and not_same_point(first_side[i], second_side[j]):
                 weighted_edges.append([i, j, distance])
 
     G = nx.Graph()
@@ -286,6 +286,13 @@ def pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta,
     pairing = nx.min_weight_matching(G)
 
     return pairing
+
+
+def not_same_point(p1, p2):
+
+    if p1[0] == p2[0] and p1[1] == p2[1]:
+        return False
+    return True
 
 
 def not_same_direction(vec1, vec2):

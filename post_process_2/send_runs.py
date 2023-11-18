@@ -6,7 +6,7 @@ import re
 
 import post_process_main_file
 
-mac = True
+mac = False
 
 if mac:
     prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
@@ -52,7 +52,7 @@ def main():
         for sim_name in sims:
             N, h, rhoH, ic = params_from_name(sim_name)
             # comment this out to run post_process on all files in simulation results
-            if h == 0.8 and 0.7 <= rhoH <= 0.9 and N == 90000 and ic == 'square':
+            if h == 0.8 and rhoH == 0.81 and N == 90000 and ic == 'square':
                 writer.writerow((sim_name,))
 
     finally:
