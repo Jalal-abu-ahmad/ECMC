@@ -41,7 +41,7 @@ def create_op_dir(sim):
 
 def main():
 
-    fields = ['file name', 'AF order parameter', 'no of connected components', 'Bipartiteness']
+    fields = ['file name', 'AF order parameter', 'no of connected components', 'Bipartiteness', 'no. of dislocations', 'no of unpaired vecs after first pairing']
     sims = [d for d in os.listdir(prefix) if d.startswith('N=') and os.path.isdir(os.path.join(prefix, d))]
 
     for sim in sims:
@@ -52,7 +52,7 @@ def main():
         for sim_name in sims:
             N, h, rhoH, ic = params_from_name(sim_name)
             # comment this out to run post_process on all files in simulation results
-            if h == 0.8 and rhoH == 0.81 and N == 90000 and ic == 'square':
+            if h == 0.8 and 0.7 <= rhoH <= 0.9 and N == 90000 and ic == 'square':
                 writer.writerow((sim_name,))
 
     finally:

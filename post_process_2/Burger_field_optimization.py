@@ -5,29 +5,23 @@ from matplotlib import pyplot as plt
 from scipy.optimize import linear_sum_assignment
 from shapely.geometry import Point, Polygon, LineString
 from sklearn.neighbors import kneighbors_graph
-
 import utils
-import hiii
 
 epsilon = 0.00001
 
 
 def Burger_vec_optimization(points, list_of_edges, Burger_field, a, boundaries, theta):
+
     no_duplicates_Burger_field = clean_Burger_field(Burger_field, boundaries, theta)
     Burger_field_diagonals_separated = break_diagonal_vecs_2_components(no_duplicates_Burger_field)
-    up_vecs, down_vecs, right_vecs, left_vecs = vecs_classification(Burger_field_diagonals_separated)
 
-    # paired_Burgers_field, unpaired_up_down, unpaired_right_left = pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
-    # second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta)
-    paired_Burgers_field = pair_vec_of_all_kinds(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta)
+    paired_Burgers_field, unpaired_vecs = pair_vec_of_all_kinds(Burger_field_diagonals_separated, boundaries, a, theta)
     pairs_connecting_lines = isolate_edges_that_cross_pairs(paired_Burgers_field, list_of_edges, boundaries, points, a, theta)
 
-    print("no of up vectors=", len(up_vecs))
-    print("no of down vectors=", len(down_vecs))
-    print("no of right vectors=", len(right_vecs))
-    print("no of left vectors=", len(left_vecs))
+    print("no of dislocations=", len(Burger_field_diagonals_separated))
 
-    return paired_Burgers_field, pairs_connecting_lines
+    Burgers_params = map(str, [len(Burger_field_diagonals_separated), len(unpaired_vecs)])
+    return paired_Burgers_field, pairs_connecting_lines, Burgers_params
 
 
 def clean_Burger_field(Burger_field, boundaries, theta):
@@ -67,44 +61,9 @@ def break_diagonal_vec(vec):
     return horizontal_vec, vertical_vec
 
 
-def calculate_vectors_midpoints(vector_field):
-    mid_vec = []
-    for [p1_x, p1_y, p2_x, p2_y] in vector_field:
-        mid_vec.append(midpoint([p1_x, p1_y], [p2_x, p2_y]))
+def pair_vec_of_all_kinds(all_vecs_full, boundaries, a, theta):
 
-    return mid_vec
-
-
-def vecs_classification(vector_field):
-    up_vecs = []
-    down_vecs = []
-    left_vecs = []
-    right_vecs = []
-
-    for [p1_x, p1_y, p2_x, p2_y] in vector_field:
-        if np.abs(p1_x - p2_x) < epsilon:
-            if p1_y < p2_y:
-                up_vecs.append([p1_x, p1_y, p2_x, p2_y])
-            else:
-                down_vecs.append([p1_x, p1_y, p2_x, p2_y])
-        if np.abs(p1_y - p2_y) < epsilon:
-            if p1_x < p2_x:
-                right_vecs.append([p1_x, p1_y, p2_x, p2_y])
-            else:
-                left_vecs.append([p1_x, p1_y, p2_x, p2_y])
-
-    return up_vecs, down_vecs, right_vecs, left_vecs
-
-
-def pair_vec_of_all_kinds(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
-
-    up = np.array(up_vecs)[:, [0, 1]].tolist()
-    down = np.array(down_vecs)[:, [0, 1]].tolist()
-    right = np.array(right_vecs)[:, [0, 1]].tolist()
-    left = np.array(left_vecs)[:, [0, 1]].tolist()
-
-    all_vecs = up + down + right + left
-    all_vecs_full = up_vecs + down_vecs + right_vecs + left_vecs
+    all_vecs = np.array(all_vecs_full)[:, [0, 1]].tolist()
     pairing = pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta, 5)
 
     paired, unpaired = make_paired_Burger_field_all_options(all_vecs_full, pairing)
@@ -116,78 +75,6 @@ def pair_vec_of_all_kinds(up_vecs, down_vecs, right_vecs, left_vecs, boundaries,
     for (u, v) in second_pairing:
         paired[unpaired[u][1]][1] = unpaired[v][1]
         paired[unpaired[v][1]][1] = unpaired[u][1]
-
-    return paired
-
-
-def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
-
-    up = np.array(up_vecs)[:, [0, 1]].tolist()
-    down = np.array(down_vecs)[:, [0, 1]].tolist()
-    right = np.array(right_vecs)[:, [0, 1]].tolist()
-    left = np.array(left_vecs)[:, [0, 1]].tolist()
-
-    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 5)
-    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 5)
-
-    paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
-    paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
-
-    # hiii.hii(unpaired_right_left, unpaired_up_down)
-
-    paired_Burgers_field = paired_up_down + paired_right_left
-
-    return paired_Burgers_field, unpaired_up_down, unpaired_right_left
-
-
-def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta):
-
-    up_down = to_vecs(unpaired_up_down)
-    right_left = to_vecs(unpaired_right_left)
-    unpaired_after_second_optimization = []
-
-    vec_starting_points = up_down + right_left
-
-    full_vecs = unpaired_up_down + unpaired_right_left
-
-    second_pairing = pairing_two_sides_second_optimization(vec_starting_points, full_vecs, boundaries, a, theta, 60)
-
-    for (u, v) in second_pairing:
-        paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]
-        paired_Burgers_field[full_vecs[v][1]][1] = full_vecs[u][1]
-
-    for idx, [[p1_x, p1_y, p2_x, p2_y], neighbor] in enumerate(paired_Burgers_field):
-        if neighbor == -1:
-            print([p1_x, p1_y, p2_x, p2_y])
-            unpaired_after_second_optimization.append([[p1_x, p1_y, p2_x, p2_y], idx])
-
-    third_optimization_starting_points = to_vecs(unpaired_after_second_optimization)
-    third_pairing = pairing_two_sides_second_optimization(third_optimization_starting_points, unpaired_after_second_optimization, boundaries, a, theta, 200)
-
-    for (u, v) in third_pairing:
-        paired_Burgers_field[unpaired_after_second_optimization[u][1]][1] = unpaired_after_second_optimization[v][1]
-        paired_Burgers_field[unpaired_after_second_optimization[v][1]][1] = unpaired_after_second_optimization[u][1]
-
-
-def make_paired_Burger_field(first_side, second_side, pairing, offset):
-
-    unpaired = []
-    unpaired_no = 0
-    full_vecs = first_side + second_side
-    paired = [[[0]*4, -1]] * len(full_vecs)
-
-    for (u, v) in pairing:
-        paired[u] = [full_vecs[u], v + offset]
-        paired[v] = [full_vecs[v], u + offset]
-
-    for i in range(len(full_vecs)):
-        if paired[i][1] == -1:
-            unpaired_no += 1
-            print(full_vecs[i])
-            unpaired.append([full_vecs[i], i+offset])
-            paired[i] = [full_vecs[i], -1]
-
-    print("no of unpaired dislocations from this batch is", unpaired_no)
 
     return paired, unpaired
 
@@ -212,55 +99,6 @@ def make_paired_Burger_field_all_options(all_vecs_full, pairing):
     print("no of unpaired dislocations from this batch is", unpaired_no)
 
     return paired, unpaired
-
-
-def pairing_two_sides(first_side, second_side, boundaries, a, theta, coeff):
-
-    """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
-    “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
-
-    weighted_edges = []
-
-    first_side = utils.rotate_points_by_angle(first_side, -theta)
-    second_side = utils.rotate_points_by_angle(second_side, -theta)
-
-    for i in range(len(first_side)):
-        for j in range(len(second_side)):
-            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
-            if coeff * a > distance > 0:
-                weighted_edges.append([i, len(first_side)+j, distance])
-
-    G = nx.Graph()
-    print("pairing up")
-    G.add_weighted_edges_from(weighted_edges)
-    pairing = nx.min_weight_matching(G)
-
-    return pairing
-
-
-def pairing_two_sides_second_optimization(points, full_vec, boundaries, a, theta, coeff):
-
-    """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
-    “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
-
-    weighted_edges = []
-
-    first_side = utils.rotate_points_by_angle(points, -theta)
-    second_side = utils.rotate_points_by_angle(points, -theta)
-    full = utils.rotate_Burger_vecs([full_vec[i][0] for i in range(len(full_vec))], -theta)
-
-    for i in range(len(first_side)):
-        for j in range(len(second_side)):
-            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
-            if coeff * a > distance > 0 and not_same_point(first_side[i], second_side[j]):
-                weighted_edges.append([i, j, distance])
-
-    G = nx.Graph()
-    print("pairing up")
-    G.add_weighted_edges_from(weighted_edges)
-    pairing = nx.min_weight_matching(G)
-
-    return pairing
 
 
 def pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta, coeff):
@@ -292,19 +130,6 @@ def not_same_point(p1, p2):
 
     if p1[0] == p2[0] and p1[1] == p2[1]:
         return False
-    return True
-
-
-def not_same_direction(vec1, vec2):
-
-    first_vec_x = vec1[2] - vec1[0]
-    first_vec_y = vec1[3] - vec1[1]
-    second_vec_x = vec2[2] - vec2[0]
-    second_vec_y = vec2[3] - vec2[1]
-
-    if utils.dot_product([first_vec_x, first_vec_y], [second_vec_x, second_vec_y]) > 0:
-        return False
-
     return True
 
 
@@ -411,6 +236,167 @@ ________________________________________________________________________________
 """%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"""
 
 
+def calculate_vectors_midpoints(vector_field):
+    mid_vec = []
+    for [p1_x, p1_y, p2_x, p2_y] in vector_field:
+        mid_vec.append(midpoint([p1_x, p1_y], [p2_x, p2_y]))
+
+    return mid_vec
+
+
+def vecs_classification(vector_field):
+    up_vecs = []
+    down_vecs = []
+    left_vecs = []
+    right_vecs = []
+
+    for [p1_x, p1_y, p2_x, p2_y] in vector_field:
+        if np.abs(p1_x - p2_x) < epsilon:
+            if p1_y < p2_y:
+                up_vecs.append([p1_x, p1_y, p2_x, p2_y])
+            else:
+                down_vecs.append([p1_x, p1_y, p2_x, p2_y])
+        if np.abs(p1_y - p2_y) < epsilon:
+            if p1_x < p2_x:
+                right_vecs.append([p1_x, p1_y, p2_x, p2_y])
+            else:
+                left_vecs.append([p1_x, p1_y, p2_x, p2_y])
+
+    return up_vecs, down_vecs, right_vecs, left_vecs
+
+
+def pair_vecs(up_vecs, down_vecs, right_vecs, left_vecs, boundaries, a, theta):
+
+    up = np.array(up_vecs)[:, [0, 1]].tolist()
+    down = np.array(down_vecs)[:, [0, 1]].tolist()
+    right = np.array(right_vecs)[:, [0, 1]].tolist()
+    left = np.array(left_vecs)[:, [0, 1]].tolist()
+
+    up_down_pairing = pairing_two_sides(up, down, boundaries, a, theta, 5)
+    right_left_pairing = pairing_two_sides(right, left, boundaries, a, theta, 5)
+
+    paired_up_down, unpaired_up_down = make_paired_Burger_field(up_vecs, down_vecs, up_down_pairing, 0)
+    paired_right_left, unpaired_right_left = make_paired_Burger_field(right_vecs, left_vecs, right_left_pairing, len(paired_up_down))
+
+    paired_Burgers_field = paired_up_down + paired_right_left
+
+    return paired_Burgers_field, unpaired_up_down, unpaired_right_left
+
+
+def second_optimization_pairing(paired_Burgers_field, unpaired_up_down, unpaired_right_left, boundaries, a, theta):
+
+    up_down = to_vecs(unpaired_up_down)
+    right_left = to_vecs(unpaired_right_left)
+    unpaired_after_second_optimization = []
+
+    vec_starting_points = up_down + right_left
+
+    full_vecs = unpaired_up_down + unpaired_right_left
+
+    second_pairing = pairing_two_sides_second_optimization(vec_starting_points, full_vecs, boundaries, a, theta, 60)
+
+    for (u, v) in second_pairing:
+        paired_Burgers_field[full_vecs[u][1]][1] = full_vecs[v][1]
+        paired_Burgers_field[full_vecs[v][1]][1] = full_vecs[u][1]
+
+    for idx, [[p1_x, p1_y, p2_x, p2_y], neighbor] in enumerate(paired_Burgers_field):
+        if neighbor == -1:
+            print([p1_x, p1_y, p2_x, p2_y])
+            unpaired_after_second_optimization.append([[p1_x, p1_y, p2_x, p2_y], idx])
+
+    third_optimization_starting_points = to_vecs(unpaired_after_second_optimization)
+    third_pairing = pairing_two_sides_second_optimization(third_optimization_starting_points, unpaired_after_second_optimization, boundaries, a, theta, 200)
+
+    for (u, v) in third_pairing:
+        paired_Burgers_field[unpaired_after_second_optimization[u][1]][1] = unpaired_after_second_optimization[v][1]
+        paired_Burgers_field[unpaired_after_second_optimization[v][1]][1] = unpaired_after_second_optimization[u][1]
+
+
+def make_paired_Burger_field(first_side, second_side, pairing, offset):
+
+    unpaired = []
+    unpaired_no = 0
+    full_vecs = first_side + second_side
+    paired = [[[0]*4, -1]] * len(full_vecs)
+
+    for (u, v) in pairing:
+        paired[u] = [full_vecs[u], v + offset]
+        paired[v] = [full_vecs[v], u + offset]
+
+    for i in range(len(full_vecs)):
+        if paired[i][1] == -1:
+            unpaired_no += 1
+            print(full_vecs[i])
+            unpaired.append([full_vecs[i], i+offset])
+            paired[i] = [full_vecs[i], -1]
+
+    print("no of unpaired dislocations from this batch is", unpaired_no)
+
+    return paired, unpaired
+
+
+def not_same_direction(vec1, vec2):
+
+    first_vec_x = vec1[2] - vec1[0]
+    first_vec_y = vec1[3] - vec1[1]
+    second_vec_x = vec2[2] - vec2[0]
+    second_vec_y = vec2[3] - vec2[1]
+
+    if utils.dot_product([first_vec_x, first_vec_y], [second_vec_x, second_vec_y]) > 0:
+        return False
+
+    return True
+
+
+def pairing_two_sides(first_side, second_side, boundaries, a, theta, coeff):
+
+    """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
+    “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
+
+    weighted_edges = []
+
+    first_side = utils.rotate_points_by_angle(first_side, -theta)
+    second_side = utils.rotate_points_by_angle(second_side, -theta)
+
+    for i in range(len(first_side)):
+        for j in range(len(second_side)):
+            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
+            if coeff * a > distance > 0:
+                weighted_edges.append([i, len(first_side)+j, distance])
+
+    G = nx.Graph()
+    print("pairing up")
+    G.add_weighted_edges_from(weighted_edges)
+    pairing = nx.min_weight_matching(G)
+
+    return pairing
+
+
+def pairing_two_sides_second_optimization(points, full_vec, boundaries, a, theta, coeff):
+
+    """ using the following paper: https://dl.acm.org/doi/pdf/10.1145/6462.6502
+    “Efficient Algorithms for Finding Maximum Matching in Graphs”, Zvi Galil, ACM Computing Surveys, 1986."""
+
+    weighted_edges = []
+
+    first_side = utils.rotate_points_by_angle(points, -theta)
+    second_side = utils.rotate_points_by_angle(points, -theta)
+    full = utils.rotate_Burger_vecs([full_vec[i][0] for i in range(len(full_vec))], -theta)
+
+    for i in range(len(first_side)):
+        for j in range(len(second_side)):
+            distance = utils.cyc_dist(first_side[i], second_side[j], boundaries)
+            if coeff * a > distance > 0 and not_same_point(first_side[i], second_side[j]):
+                weighted_edges.append([i, j, distance])
+
+    G = nx.Graph()
+    print("pairing up")
+    G.add_weighted_edges_from(weighted_edges)
+    pairing = nx.min_weight_matching(G)
+
+    return pairing
+
+"""%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"""
 def connect_and_plot_pairs(first_side, second_side, pairing):
 
     two_sides = first_side + second_side

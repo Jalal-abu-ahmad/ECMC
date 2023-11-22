@@ -81,18 +81,10 @@ def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-    optimized_Burgers_field, pairs_connecting_lines = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
+    optimized_Burgers_field, pairs_connecting_lines, Burgers_parameters = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
 
-    parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
-
-    # if AF_order_parameter < 0.5:
-    #
-    #     utils.plot_boundaries([L, L], global_theta)
-    #     utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
-    #     utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
-    #     utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
-    #     utils.plot_colored_points(aligned_points_with_z, l_z, is_point_in_dislocation)
-    #     plt.show()
+    connectivity_parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
+    parameters = list(connectivity_parameters) + list(Burgers_parameters)
 
     # utils.plot_boundaries([L, L], global_theta)
     # utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
