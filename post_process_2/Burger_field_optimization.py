@@ -36,11 +36,13 @@ def clean_Burger_field(Burger_field, boundaries, theta):
 def break_diagonal_vecs_2_components(vector_field):
 
     separated_diagonals_vector_field = []
+    count =0
 
     for [p1_x, p1_y, p2_x, p2_y] in vector_field:
         if is_vec_diagonal([p1_x, p1_y, p2_x, p2_y]):
-            separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[0])
-            separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[1])
+            # separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[0])
+            # separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[1])
+            count = count + 1
         else:
             separated_diagonals_vector_field.append([p1_x, p1_y, p2_x, p2_y])
 
