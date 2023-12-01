@@ -6,14 +6,17 @@ import re
 
 import post_process_main_file
 
-mac = True
+# mac = True
+#
+# if mac:
+#     prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+#     code_prefix = "/Users/jalal/Desktop/ECMC"
+# else:
+#     prefix = "C:/Users/Galal/ECMC/"
+#     code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
 
-if mac:
-    prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
-    code_prefix = "/Users/jalal/Desktop/ECMC"
-else:
-    prefix = "C:/Users/Galal/ECMC/"
-    code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
+prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+code_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
 
 
 def params_from_name(name):
@@ -52,30 +55,36 @@ def main():
         for sim_name in sims:
             N, h, rhoH, ic = params_from_name(sim_name)
             # comment this out to run post_process on all files in simulation results
-            if h == 0.8 and 0.7 <= rhoH <= 0.9 and N == 90000 and ic == 'square':
+            if h == 0.8 and rhoH == 0.81 and N == 90000 and ic == 'square':
                 writer.writerow((sim_name,))
 
     finally:
         f.close()
-        # os.system("condor_submit post_process_run.sub")
 
-    f = open(os.path.join(code_prefix, 'post_process_files_to_run.csv'), 'r')
-    folders_to_run = csv.reader(f)
+    try:
 
-    for [folder] in folders_to_run:
-        N, h, rhoH, ic = params_from_name(folder)
-        join_path = os.path.join(prefix, folder+'/')
-        files = [d for d in os.listdir(join_path) if d.isnumeric()] # and d == '21648433']
-        destination = open(os.path.join(code_prefix, 'post_process_results' + folder + '.csv'), 'wt')
-        writer = csv.writer(destination, lineterminator='\n')
-        writer.writerow(fields)
-        for file in files:
-            parameters = post_process_main_file.read_from_file(N, rhoH, h, join_path + file, destination)
-            row = [file] + list(parameters)
-            writer.writerow(row)
-            destination.flush()
+        ff = open(os.path.join(code_prefix, 'list_of_jobs.txt'), 'wt')
+        f = open(os.path.join(code_prefix, 'post_process_files_to_run.csv'), 'r')
+        folders_to_run = csv.reader(f)
+        jobs_writer = csv.writer(ff, lineterminator='\n')
 
-        destination.close()
+        for [folder] in folders_to_run:
+            N, h, rhoH, ic = params_from_name(folder)
+            join_path = os.path.join(prefix, folder+'/')
+            files = [d for d in os.listdir(join_path) if d.isnumeric()] # and d == '21648433']
+            destination = open(os.path.join(code_prefix, 'post_process_results' + folder + '.csv'), 'wt')
+            writer = csv.writer(destination, lineterminator='\n')
+            writer.writerow(fields)
+            for file in files:
+                jobs_writer.writerow((folder, file))
+                ff.flush()
+                # parameters = post_process_main_file.read_from_file(N, rhoH, h, join_path + file, destination)
+                # row = [file] + list(parameters)
+                # writer.writerow(row)
+                # destination.flush()
+            ff.close()
+    finally:
+        os.system("condor_submit post_process_run.sub")
 
 
 if __name__ == "__main__":

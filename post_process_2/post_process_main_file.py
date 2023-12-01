@@ -1,4 +1,7 @@
 import csv
+import os
+import re
+import sys
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -42,9 +45,25 @@ def align_points(points, l_x, l_y, N, burger_vecs, theta):
     return aligned_points
 
 
-def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
+def params_from_name(name):
+    ss = re.split("[_=]", name)
+    for i, s in enumerate(ss):
+        if s == 'N':
+            N = int(ss[i + 1])
+        if s == 'h':
+            h = float(ss[i + 1])
+        if s == 'rhoH':
+            rhoH = float(ss[i + 1])
+        if s == 'triangle' or s == 'square':
+            ic = s
+            if ss[i - 1] == 'AF' and s == 'triangle':
+                ic = 'honeycomb'
+    return N, h, rhoH, ic
 
-    writer = csv.writer(destination_path, lineterminator='\n')
+
+def post_process_main(sim_name, file_number):
+
+
 
     # mac = True
     #
@@ -59,7 +78,18 @@ def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
     # N = 90000
     # rho_H = 0.8
     # h = 0.8
+
+    # data_prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+    # result_prefix = "/Users/jalal/Desktop/ECMC"
+
+    data_prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+    result_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
+
+    N, h, rho_H, ic = params_from_name(sim_name)
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
+    file_path = os.path.join(data_prefix, sim_name, file_number)
+    f = open(os.path.join(result_prefix, 'post_process_results' + sim_name + '.csv'), 'a')
+    writer = csv.writer(f, lineterminator='\n')
 
     points_with_z = utils.read_points_from_file(file_path=file_path)
     unwrapped_aligned_points_z = points_with_z[:, 2]
@@ -93,8 +123,14 @@ def read_from_file(N, rho_H, h, file_path=None, destination_path=None):
     # utils.plot_colored_points(aligned_points_with_z, l_z)
     # plt.show()
 
-    return parameters
+    row = [file_number] + list(parameters)
+    writer.writerow(row)
 
 
 if __name__ == "__main__":
-    read_from_file()
+
+    sim_name = sys.argv[1]
+    file_number = sys.argv[2]
+    post_process_main(sim_name, file_number)
+
+ # N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '7484757'

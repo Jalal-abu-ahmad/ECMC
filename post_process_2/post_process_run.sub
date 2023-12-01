@@ -1,14 +1,14 @@
 # Unix submit description file
 # post_process_run.sub -- calculate order parameters and correlations for all simulations
 executable = post_process_run_env.sh
-log = /storage/ph_daniel/jalal/ECMC_post_process_results/log
-output = /storage/ph_daniel/jalal/ECMC_post_process_results/out.out
-error = /storage/ph_daniel/jalal/ECMC_post_process_results/err.err
+log = /storage/ph_daniel/jalal/ECMC_post_process_results/log_$(sim_name)
+output = /storage/ph_daniel/jalal/ECMC_post_process_results/out_$(sim_name).out
+error = /storage/ph_daniel/jalal/ECMC_post_process_results/err_$(sim_name).err
 request_cpus = 1
-Arguments =
+Arguments = $(sim_name) $(file_number)
 RequestMemory = 2GB
 universe = vanilla
 on_exit_remove = (ExitBySignal == False) && (ExitCode == 0)
 max_retries  = 30
 requirements = Machine =!= LastRemoteHost
-queue
+queue sim_name,file_number from list_of_jobs.txt
