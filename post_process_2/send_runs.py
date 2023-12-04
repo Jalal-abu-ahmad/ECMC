@@ -6,17 +6,17 @@ import re
 
 import post_process_main_file
 
-# mac = True
-#
-# if mac:
-#     prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
-#     code_prefix = "/Users/jalal/Desktop/ECMC"
-# else:
-#     prefix = "C:/Users/Galal/ECMC/"
-#     code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
+mac = True
 
-prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
-code_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
+if mac:
+    prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+    code_prefix = "/Users/jalal/Desktop/ECMC"
+else:
+    prefix = "C:/Users/Galal/ECMC/"
+    code_prefix = "C:/Users/Galal/OneDrive - Technion/Desktop/figures/results/"
+
+# prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+# code_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
 
 
 def params_from_name(name):

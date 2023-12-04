@@ -79,11 +79,11 @@ def post_process_main(sim_name, file_number):
     # rho_H = 0.8
     # h = 0.8
 
-    # data_prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
-    # result_prefix = "/Users/jalal/Desktop/ECMC"
+    data_prefix = "/Users/jalal/Desktop/ECMC/ECMC_simulation_results3.0/"
+    result_prefix = "/Users/jalal/Desktop/ECMC"
 
-    data_prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
-    result_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
+    # data_prefix = "/storage/ph_daniel/danielab/ECMC_simulation_results3.0/"
+    # result_prefix = "/storage/ph_daniel/jalal/ECMC_post_process_results/"
 
     N, h, rho_H, ic = params_from_name(sim_name)
     L, a, l_z = utils.get_params(N=N, h=h, rho_H=rho_H)
@@ -129,8 +129,10 @@ def post_process_main(sim_name, file_number):
 
 if __name__ == "__main__":
 
-    sim_name = sys.argv[1]
-    file_number = sys.argv[2]
-    post_process_main(sim_name, file_number)
+    # sim_name = sys.argv[1]
+    # file_number = sys.argv[2]
+    # post_process_main(sim_name, file_number)
 
- # N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '7484757'
+    post_process_main('N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '29841156')
+
+ # 'N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '7484757'
