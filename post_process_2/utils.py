@@ -191,14 +191,14 @@ def out_of_boundaries(point, L):
     return False
 
 
-def plot(points, edges_with_colors, non_diagonal):
+def plot(points, edges_with_colors, no_diagonal):
     print("plotting edges")
     for (p1, p2), color, in_circuit in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
-        if not (color == 'red' and non_diagonal):
+        if not (color == 'salmon' and no_diagonal):
             if not in_circuit:
-                plt.plot([x1, x2], [y1, y2], color=color, alpha=1)
+                plt.plot([x1, x2], [y1, y2], color='k', alpha=1)
 
 
 def plot_burger_field(burger_vecs, pairs_connecting_lines, boundaries, plot_pairing=False):
@@ -242,16 +242,24 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo', markersize=5)
 
-    # plt.axis([130, 200, 360, 410])
+    plt.axis([130, 200, 360, 410])
     plt.gca().set_aspect('equal')
-    plt.show()
+
+
+def plot_points(points):
+    print("coloring the graph")
+    for i in range(len(points)):
+        p = points[i]
+        plt.plot(p[0], p[1], 'blue', marker='o', markersize=5)
+    plt.axis([130, 200, 360, 410])
+    plt.gca().set_aspect('equal')
 
 
 def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
     print("coloring frustrations green")
     no_of_frustrations = 0
     for (p1, p2), color, in_circuit in array_of_edges:
-        if not (color == 'red' or in_circuit):
+        if not (color == 'salmon' or in_circuit):
             if (points_with_z[p1][2] > l_z / 2 and points_with_z[p2][2] > l_z / 2) or \
                     (points_with_z[p1][2] < l_z / 2 and points_with_z[p2][2] < l_z / 2):
 
@@ -263,13 +271,17 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
     print("no of frustrations outside dislocations:", no_of_frustrations)
 
 
-def plot_nn_graph(nn_edges, points):
-    for n in range(len(nn_edges)):
-        for e in range(len(nn_edges[n])):
-            x1, y1 = nn_edges[n][e][0]
-            x2, y2 = nn_edges[n][e][1]
-            plt.plot([x1, x2], [y1, y2], color='blue')
+def plot_nn_graph(N, NNgraph, points):
+    nn = nearest_neighbors(N, NNgraph)
+    for n in range(len(points)):
+        x1, y1 = points[n]
+        for j in nn[n]:
+            x2, y2 = points[j]
+            if math.dist([x1,y1], [x2,y2]) < 100:
+                plt.plot([x1, x2], [y1, y2], color='blue')
     plt.scatter(points[:, 0], points[:, 1])
+    plt.axis([130, 200, 360, 410])
+    plt.gca().set_aspect('equal')
     plt.show()
 
 

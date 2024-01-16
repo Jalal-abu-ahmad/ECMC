@@ -22,7 +22,7 @@ def keep_within_boundaries_and_non_isolated(G, list_of_edges, points, boundaries
     vertices = points
 
     for (u, v), color, in_circuit in list_of_edges:
-        if not (in_circuit or color == 'red'):
+        if not (in_circuit or color == 'salmon'):
             if u < N and v < N:
                 G.addEdge(u, v)
                 edges.append([u, v])
@@ -112,12 +112,10 @@ def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z
 
     print("order parameter =", AF_order_parameter)
 
-    # if AF_order_parameter < 0.5:
-    #     for i in range(len(vertices)):
-    #         p_x = vertices[i][0]
-    #         p_y = vertices[i][1]
-    #         color = vertices_color[i]
-    #         plt.plot(p_x, p_y, color, markersize=5)
-    #     plt.show()
+    for i in range(len(vertices)):
+        p_x = vertices[i][0]
+        p_y = vertices[i][1]
+        color = vertices_color[i]
+        plt.plot(p_x, p_y, color, markersize=5)
 
     return AF_order_parameter, vertices_color

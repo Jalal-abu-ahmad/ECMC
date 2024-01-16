@@ -18,6 +18,7 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     psimn_vec = []
     lattice_constant = []
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
+    # utils.plot_nn_graph(N, NNgraph, points)
     for i in range(N):
         if (i % 1000) == 0:
             print("angle calculation progress = ", int((i / N) * 100), "%")
@@ -112,16 +113,18 @@ def post_process_main(sim_name, file_number):
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
     optimized_Burgers_field, pairs_connecting_lines, Burgers_parameters = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
-
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, no_diagonal=True)
     connectivity_parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
     parameters = list(connectivity_parameters) + list(Burgers_parameters)
 
-    # utils.plot_boundaries([L, L], global_theta)
-    # utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
-    # utils.plot(points=aligned_points, edges_with_colors=list_of_edges, non_diagonal=True)
-    # # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
-    # utils.plot_colored_points(aligned_points_with_z, l_z)
-    # plt.show()
+    utils.plot_boundaries([L, L], global_theta)
+    utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], False)
+    # utils.plot(points=aligned_points, edges_with_colors=list_of_edges, no_diagonal=True)
+    # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
+    # utils.plot_colored_points(aligned_points_with_z,l_z)
+    plt.axis([130, 200, 360, 410])
+    plt.gca().set_aspect('equal')
+    plt.show()
 
     row = [file_number] + list(parameters)
     writer.writerow(row)
@@ -133,6 +136,6 @@ if __name__ == "__main__":
     # file_number = sys.argv[2]
     # post_process_main(sim_name, file_number)
 
-    post_process_main('N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '29841156')
+    post_process_main('N=90000_h=0.8_rhoH=0.81_AF_square_ECMC','90167817')
 
  # 'N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '7484757'

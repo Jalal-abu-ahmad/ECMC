@@ -96,12 +96,12 @@ def compare_to_perfect_lattice(points, triangle, aligned_perfect_lattice_non_dia
             if utils.is_diagonal(e, aligned_perfect_lattice_diag_vecs, aligned_perfect_lattice_non_diag_vecs, points):
                 '''false means that the edge is not in a non-zero Burger-Circuit, will be overriden later if edge is in 
                 a non zero burger circuit'''
-                list_of_edges.append([e, "red", False])
+                list_of_edges.append([e, "salmon", False])
             else:
                 if utils.is_horizontal(e, points):
-                    list_of_edges.append([e, "y", False])
+                    list_of_edges.append([e, "cyan", False])
                 else:
-                    list_of_edges.append([e, "blue", False])
+                    list_of_edges.append([e, "g", False])
     return ab_ref, bc_ref, ca_ref
 
 

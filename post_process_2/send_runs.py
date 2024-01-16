@@ -82,9 +82,12 @@ def main():
                 # row = [file] + list(parameters)
                 # writer.writerow(row)
                 # destination.flush()
-            ff.close()
+
     finally:
         os.system("condor_submit post_process_run.sub")
+        ff.close()
+        destination.close()
+        f.close()
 
 
 if __name__ == "__main__":
