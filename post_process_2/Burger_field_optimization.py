@@ -1,3 +1,5 @@
+import sys
+
 import geopandas as gpd
 import networkx as nx
 import numpy as np
@@ -123,6 +125,7 @@ def pairing_two_sides_all_options(all_vecs, all_vecs_full, boundaries, a, theta,
     G = nx.Graph()
     print("pairing up")
     G.add_weighted_edges_from(weighted_edges)
+    sys.setrecursionlimit(20000)
     pairing = nx.min_weight_matching(G)
 
     return pairing

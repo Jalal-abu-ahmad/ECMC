@@ -71,11 +71,8 @@ def edge2vector(edge, points):
 
 
 def Burger_vector_calc(triangle_mid_point, Burger_circuit):
-    neighbor = -1
     Burger_vector = [triangle_mid_point[0], triangle_mid_point[1], Burger_circuit[0][0] + triangle_mid_point[0],
                      Burger_circuit[0][1] + triangle_mid_point[1]]
-
-                            # -1 is the neighbor will be used later
 
     return Burger_vector
 
@@ -99,9 +96,9 @@ def compare_to_perfect_lattice(points, triangle, aligned_perfect_lattice_non_dia
                 list_of_edges.append([e, "salmon", False])
             else:
                 if utils.is_horizontal(e, points):
-                    list_of_edges.append([e, "cyan", False])
+                    list_of_edges.append([e, "grey", False])
                 else:
-                    list_of_edges.append([e, "g", False])
+                    list_of_edges.append([e, "green", False])
     return ab_ref, bc_ref, ca_ref
 
 

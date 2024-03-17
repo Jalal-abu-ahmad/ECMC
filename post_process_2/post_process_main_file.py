@@ -5,6 +5,8 @@ import sys
 
 import numpy as np
 from matplotlib import pyplot as plt
+from shapely.geometry import Point, Polygon, LineString
+import geopandas as gpd
 
 import Burger_field_optimization
 import burger_field_calculation
@@ -18,7 +20,6 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     psimn_vec = []
     lattice_constant = []
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
-    # utils.plot_nn_graph(N, NNgraph, points)
     for i in range(N):
         if (i % 1000) == 0:
             print("angle calculation progress = ", int((i / N) * 100), "%")
@@ -34,14 +35,31 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     return orientation, a
 
 
+def calculate_rotation_angel_of_area(points, l_x, l_y, N):
+    print("calculating nearest neighbors graph... will take a while...")
+    NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
+    psimn_vec = []
+    lattice_constant = []
+    nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
+    for i in range(N):
+        if (i % 1000) == 0:
+            print("angle calculation progress = ", int((i / N) * 100), "%")
+        dr = [utils.no_cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
+        for r in dr:
+            lattice_constant.append(utils.vector_length(r))
+            dr = list(filter(None, dr))
+        t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
+        psi_n = np.mean(np.exp(1j * 4 * t))
+        psimn_vec.append(np.abs(psi_n) * np.exp(1j * np.angle(psi_n)))
+    psi_avg = np.mean(psimn_vec)
+    orientation = np.imag(np.log(psi_avg)) / 4
+    a = np.mean(lattice_constant)
+    return orientation, a
+
+
 def align_points(points, l_x, l_y, N, burger_vecs, theta):
 
     aligned_points = utils.rotate_points_by_angle(points, theta)
-
-    # burger(aligned_points)
-    # temp1 = utils.rotate_points_by_angle(burger_vecs[:,[0,1]],theta)
-    # temp2 = utils.rotate_points_by_angle(burger_vecs[:,[2,3]], theta)
-    # rotated_Burger_vec= np.hstack((temp1, temp2))
 
     return aligned_points
 
@@ -61,6 +79,40 @@ def params_from_name(name):
                 ic = 'honeycomb'
     return N, h, rhoH, ic
 
+
+def Burgers_field_second_iteration(points, a, order, Burger_vecs):
+
+    for [p1_x, p1_y, p2_x, p2_y] in Burger_vecs:
+        poly, l_x, l_y  = create_polygon(a, [p1_x, p1_y], 5)
+        # p = gpd.GeoSeries(poly)
+        # p.plot()
+        # plt.show()
+        points_in_dislocation_area= np.array(is_point_in_polygon(poly, points))
+        calculate_rotation_angel_of_area(points)
+
+
+def create_polygon(a, point, buffer):
+
+    p11 = point + np.array([-buffer * a, -buffer * a])
+    p12 = point + np.array([-buffer * a, buffer * a])
+    p21 = point + np.array([buffer * a, buffer * a])
+    p22 = point + np.array([buffer * a, -buffer * a])
+
+    poly = Polygon([p11, p12, p21, p22])
+
+    return poly
+
+
+def is_point_in_polygon(polygon, points):
+    no_of_points = len(points)
+    point_in_area=[]
+
+    for i in range(no_of_points):
+        p = Point(points[i])
+        if p.within(polygon):
+            point_in_area.append(points[i])
+
+    return point_in_area
 
 def post_process_main(sim_name, file_number):
 
@@ -112,8 +164,8 @@ def post_process_main(sim_name, file_number):
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
+    Burgers_field_second_iteration(aligned_points, a, 1, Burger_vecs)
     optimized_Burgers_field, pairs_connecting_lines, Burgers_parameters = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
-    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, no_diagonal=True)
     connectivity_parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
     parameters = list(connectivity_parameters) + list(Burgers_parameters)
 
@@ -134,8 +186,9 @@ if __name__ == "__main__":
 
     # sim_name = sys.argv[1]
     # file_number = sys.argv[2]
-    # post_process_main(sim_name, file_number)
+    # operation = sys,argv[3]
+    # post_process_main(sim_name, file_number, operation)
 
-    post_process_main('N=90000_h=0.8_rhoH=0.81_AF_square_ECMC','90167817')
+    post_process_main('N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '90167817')
 
  # 'N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '7484757'

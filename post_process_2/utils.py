@@ -168,6 +168,18 @@ def cyclic_vec(boundaries, sphere1, sphere2):
     return vec
 
 
+def no_cyclic_vec(boundaries, sphere1, sphere2):
+    dx = np.array(sphere1) - sphere2  # direct vector
+    vec = np.zeros(len(dx))
+    for i in range(2):
+        l = boundaries[i]
+        dxs = np.array([dx[i], dx[i] + l, dx[i] - l])
+        vec[i] = dxs[np.argmin(dxs ** 2)]  # find shorter path through B.D.
+    if vector_length(vec) < dx:
+        return None
+    return vec
+
+
 def filter_none(l: list) -> list:
     return list(filter(lambda item: item is not None, l))
 
@@ -242,7 +254,7 @@ def plot_colored_points(points, l_z):
         else:
             plt.plot(p[0], p[1], 'bo', markersize=5)
 
-    plt.axis([130, 200, 360, 410])
+    plt.axis([150, 200, 370, 400])
     plt.gca().set_aspect('equal')
 
 
