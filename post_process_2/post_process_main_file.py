@@ -83,12 +83,15 @@ def params_from_name(name):
 def Burgers_field_second_iteration(points, a, order, Burger_vecs):
 
     for [p1_x, p1_y, p2_x, p2_y] in Burger_vecs:
-        poly, l_x, l_y  = create_polygon(a, [p1_x, p1_y], 5)
+        poly = create_polygon(a, [p1_x, p1_y], 5)
         # p = gpd.GeoSeries(poly)
         # p.plot()
         # plt.show()
-        points_in_dislocation_area= np.array(is_point_in_polygon(poly, points))
-        calculate_rotation_angel_of_area(points)
+        points_in_dislocation_area = np.array(is_point_in_polygon(poly, points))
+        lx_sub, ly_sub = shift_sub_lattice_to_origin(points_in_dislocation_area)
+        theta_sub = calculate_rotation_angel_of_area(points, lx_sub, ly_sub, len(points_in_dislocation_area))
+        aligned_sub_points = utils.rotate_points_by_angle(points_in_dislocation_area, theta_sub)
+        burger_field_calculation.Burger_field_calculation(points=aligned_sub_points, a=a, order=1)
 
 
 def create_polygon(a, point, buffer):
@@ -105,7 +108,7 @@ def create_polygon(a, point, buffer):
 
 def is_point_in_polygon(polygon, points):
     no_of_points = len(points)
-    point_in_area=[]
+    point_in_area = []
 
     for i in range(no_of_points):
         p = Point(points[i])
@@ -114,8 +117,22 @@ def is_point_in_polygon(polygon, points):
 
     return point_in_area
 
-def post_process_main(sim_name, file_number):
 
+def shift_sub_lattice_to_origin(points):
+    min_x = points[np.argmin(points[:, 0])]
+    min_y = points[np.argmin(points[:, 1])]
+
+    for p in points:
+        p[0] = p[0] - min_x
+        p[1] = p[1] - min_y
+
+    lx_sub = points[np.argmax(points[:, 0])]
+    ly_sub = points[np.argmax(points[:, 1])]
+
+    return lx_sub, ly_sub
+
+
+def post_process_main(sim_name, file_number):
 
 
     # mac = True
