@@ -175,7 +175,7 @@ def no_cyclic_vec(boundaries, sphere1, sphere2):
         l = boundaries[i]
         dxs = np.array([dx[i], dx[i] + l, dx[i] - l])
         vec[i] = dxs[np.argmin(dxs ** 2)]  # find shorter path through B.D.
-    if vector_length(vec) < dx:
+    if vector_length(vec) < vector_length(dx):
         return None
     return vec
 

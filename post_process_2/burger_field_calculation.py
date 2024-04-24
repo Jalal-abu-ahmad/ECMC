@@ -29,6 +29,7 @@ def Burger_field_calculation(points, a, order):
             Burger_field.append(Burger_vector_calc(triangle_mid_points[i], Burger_circuit))
             Burger_points_and_edges(points, list_of_edges, triangle, is_point_in_dislocation)
     # isolate_dislocation_area(points, list_of_edges, is_point_in_dislocation)
+    Burger_field = remove_diagonal_vecs(Burger_field)
     return Burger_field, list_of_edges, is_point_in_dislocation
 
 
@@ -144,3 +145,26 @@ def less_first(a, b):
     if a > b:
         return b, a
     return a, b
+
+
+def remove_diagonal_vecs(vector_field):
+
+    separated_diagonals_vector_field = []
+    count = 0
+
+    for [p1_x, p1_y, p2_x, p2_y] in vector_field:
+        if is_vec_diagonal([p1_x, p1_y, p2_x, p2_y]):
+            # separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[0])
+            # separated_diagonals_vector_field.append(break_diagonal_vec([p1_x, p1_y, p2_x, p2_y])[1])
+            count = count + 1
+        else:
+            separated_diagonals_vector_field.append([p1_x, p1_y, p2_x, p2_y])
+
+    return separated_diagonals_vector_field
+
+
+def is_vec_diagonal(vec):
+    if np.abs(vec[0] - vec[2]) > epsilon:
+        if np.abs(vec[1] - vec[3]) > epsilon:
+            return True
+    return False

@@ -12,49 +12,43 @@ import Burger_field_optimization
 import burger_field_calculation
 import connectivity_Bipartiteness_AFism
 import utils
+import correlation_functions
+import min_distance_Burgers_pairing as mn_dst_pairing
+
+epsilon = 0.00001
 
 
 def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
     print("calculating nearest neighbors graph... will take a while...")
     NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
     psimn_vec = []
-    lattice_constant = []
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
     for i in range(N):
         if (i % 1000) == 0:
             print("angle calculation progress = ", int((i / N) * 100), "%")
         dr = [utils.cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
-        for r in dr:
-            lattice_constant.append(utils.vector_length(r))
         t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
         psi_n = np.mean(np.exp(1j * 4 * t))
         psimn_vec.append(np.abs(psi_n) * np.exp(1j * np.angle(psi_n)))
     psi_avg = np.mean(psimn_vec)
     orientation = np.imag(np.log(psi_avg)) / 4
-    a = np.mean(lattice_constant)
-    return orientation, a
+    return orientation
 
 
 def calculate_rotation_angel_of_area(points, l_x, l_y, N):
-    print("calculating nearest neighbors graph... will take a while...")
+
     NNgraph = utils.nearest_neighbors_graph(points=points, l_x=l_x, l_y=l_y, n_neighbors=4)
     psimn_vec = []
-    lattice_constant = []
     nearest_neighbors = utils.nearest_neighbors(N=N, NNgraph=NNgraph)
     for i in range(N):
-        if (i % 1000) == 0:
-            print("angle calculation progress = ", int((i / N) * 100), "%")
-        dr = [utils.no_cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i]]
-        for r in dr:
-            lattice_constant.append(utils.vector_length(r))
-            dr = list(filter(None, dr))
-        t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
-        psi_n = np.mean(np.exp(1j * 4 * t))
-        psimn_vec.append(np.abs(psi_n) * np.exp(1j * np.angle(psi_n)))
+        dr = [utils.no_cyclic_vec([l_x, l_y], points[i], points[j]) for j in nearest_neighbors[i] if utils.no_cyclic_vec([l_x, l_y], points[i], points[j]) is not None]
+        if dr:
+            t = np.arctan2([r[1] for r in dr], [r[0] for r in dr])
+            psi_n = np.mean(np.exp(1j * 4 * t))
+            psimn_vec.append(np.abs(psi_n) * np.exp(1j * np.angle(psi_n)))
     psi_avg = np.mean(psimn_vec)
     orientation = np.imag(np.log(psi_avg)) / 4
-    a = np.mean(lattice_constant)
-    return orientation, a
+    return orientation
 
 
 def align_points(points, l_x, l_y, N, burger_vecs, theta):
@@ -81,17 +75,19 @@ def params_from_name(name):
 
 
 def Burgers_field_second_iteration(points, a, order, Burger_vecs):
-
+    Burger_vecs_second_itiration = []
     for [p1_x, p1_y, p2_x, p2_y] in Burger_vecs:
         poly = create_polygon(a, [p1_x, p1_y], 5)
-        # p = gpd.GeoSeries(poly)
-        # p.plot()
-        # plt.show()
         points_in_dislocation_area = np.array(is_point_in_polygon(poly, points))
         lx_sub, ly_sub = shift_sub_lattice_to_origin(points_in_dislocation_area)
-        theta_sub = calculate_rotation_angel_of_area(points, lx_sub, ly_sub, len(points_in_dislocation_area))
+        theta_sub = calculate_rotation_angel_of_area(points_in_dislocation_area, lx_sub, ly_sub, len(points_in_dislocation_area))
         aligned_sub_points = utils.rotate_points_by_angle(points_in_dislocation_area, theta_sub)
-        burger_field_calculation.Burger_field_calculation(points=aligned_sub_points, a=a, order=1)
+        Burgers_vecs_in_sub_lattice, edges, points_in = burger_field_calculation.Burger_field_calculation(points=aligned_sub_points, a=a, order=1)
+        relocate_vectors(Burgers_vecs_in_sub_lattice, theta_sub, ly_sub, ly_sub)
+        for [q1_x, q1_y, q2_x, q2_y] in Burgers_vecs_in_sub_lattice:
+            Burger_vecs_second_itiration.append([q1_x, q1_y, q2_x, q2_y])
+
+    return Burger_vecs_second_itiration
 
 
 def create_polygon(a, point, buffer):
@@ -119,17 +115,26 @@ def is_point_in_polygon(polygon, points):
 
 
 def shift_sub_lattice_to_origin(points):
-    min_x = points[np.argmin(points[:, 0])]
-    min_y = points[np.argmin(points[:, 1])]
+    min_x = points[np.argmin(points[:, 0])][0]
+    min_y = points[np.argmin(points[:, 1])][1]
 
     for p in points:
         p[0] = p[0] - min_x
         p[1] = p[1] - min_y
 
-    lx_sub = points[np.argmax(points[:, 0])]
-    ly_sub = points[np.argmax(points[:, 1])]
+    lx_sub = points[np.argmax(points[:, 0])][0]
+    ly_sub = points[np.argmax(points[:, 1])][1]
 
     return lx_sub, ly_sub
+
+
+def relocate_vectors(Burgers_vecs, theta_sub, l_x, l_y):
+    Burgers_vecs = utils.rotate_Burger_vecs(Burgers_vecs, -theta_sub)
+    for i in range(len(Burgers_vecs)):
+        Burgers_vecs[i][0] = Burgers_vecs[i][0] + l_x
+        Burgers_vecs[i][1] = Burgers_vecs[i][1] + l_y
+        Burgers_vecs[i][2] = Burgers_vecs[i][2] + l_x
+        Burgers_vecs[i][3] = Burgers_vecs[i][3] + l_y
 
 
 def post_process_main(sim_name, file_number):
@@ -164,9 +169,10 @@ def post_process_main(sim_name, file_number):
     points_with_z = utils.read_points_from_file(file_path=file_path)
     unwrapped_aligned_points_z = points_with_z[:, 2]
     points = np.delete(points_with_z, 2, axis=1)
+    correlation_functions.create_distance_histogram(points, [L,L] , a)
     assert points.shape == (N, 2)
     print("imported data and parameters")
-    global_theta, b = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
+    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
 
     wrapped_points_with_z = utils.wrap_boundaries(points_with_z, [L, L], int(L/50))
     wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
@@ -181,7 +187,8 @@ def post_process_main(sim_name, file_number):
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-    Burgers_field_second_iteration(aligned_points, a, 1, Burger_vecs)
+    proximity_dist = mn_dst_pairing.make_pairs_distances_list(Burger_vecs)
+    #Burgers_field_second_iteration(aligned_points, a, 1, Burger_vecs)
     optimized_Burgers_field, pairs_connecting_lines, Burgers_parameters = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
     connectivity_parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
     parameters = list(connectivity_parameters) + list(Burgers_parameters)
