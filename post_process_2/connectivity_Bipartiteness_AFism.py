@@ -112,10 +112,10 @@ def calculate_AF_order_parameter(G, vertices, edges, vertices_sign, visited, l_z
 
     print("order parameter =", AF_order_parameter)
 
-    for i in range(len(vertices)):
-        p_x = vertices[i][0]
-        p_y = vertices[i][1]
-        color = vertices_color[i]
-        plt.plot(p_x, p_y, color, markersize=5)
+    # for i in range(len(vertices)):
+    #     p_x = vertices[i][0]
+    #     p_y = vertices[i][1]
+    #     color = vertices_color[i]
+    #     plt.plot(p_x, p_y, color, markersize=5)
 
     return AF_order_parameter, vertices_color

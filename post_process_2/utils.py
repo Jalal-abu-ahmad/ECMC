@@ -203,14 +203,14 @@ def out_of_boundaries(point, L):
     return False
 
 
-def plot(points, edges_with_colors, no_diagonal):
+def plot(points, edges_with_colors, no_diagonal, line_style):
     print("plotting edges")
     for (p1, p2), color, in_circuit in edges_with_colors:
         x1, y1 = points[p1]
         x2, y2 = points[p2]
         if not (color == 'salmon' and no_diagonal):
             if not in_circuit:
-                plt.plot([x1, x2], [y1, y2], color='k', alpha=1)
+                plt.plot([x1, x2], [y1, y2], lw=0.4, linestyle= line_style  ,color='grey', alpha=1)
 
 
 def plot_burger_field(burger_vecs, pairs_connecting_lines, boundaries, plot_pairing=False):
@@ -219,10 +219,11 @@ def plot_burger_field(burger_vecs, pairs_connecting_lines, boundaries, plot_pair
         for [p1_x, p1_y, p2_x, p2_y], neighbor in burger_vecs:
             dx = p2_x - p1_x
             dy = p2_y - p1_y
-            plt.arrow(p1_x, p1_y, dx, dy, head_width=0.4,
-                      head_length=0.7,
+            plt.arrow(p1_x-dx/2, p1_y-dy/2, dx, dy, head_width=0.3,
+                      head_length=0.4,
                       length_includes_head=True,
-                      color='black')
+                      lw=2,
+                      color='#008080')
 
     if plot_pairing:
         for pair_line in pairs_connecting_lines:
@@ -231,7 +232,7 @@ def plot_burger_field(burger_vecs, pairs_connecting_lines, boundaries, plot_pair
             r_x = pair_line.coords[1][0]
             r_y = pair_line.coords[1][1]
 
-            plt.plot([p1_x, r_x], [p1_y, r_y], color="purple")
+            plt.plot([p1_x, r_x], [p1_y, r_y], lw=1.5, linestyle = 'dotted', color="orange")
 
 
 def plot_boundaries(boundaries, global_theta):
@@ -250,12 +251,18 @@ def plot_colored_points(points, l_z):
     for i in range(len(points)):
         p = points[i]
         if p[2] > l_z / 2:
-            plt.plot(p[0], p[1], 'ro', markersize=5)
+            plt.plot(p[0], p[1], 'ro', markersize=4)
         else:
-            plt.plot(p[0], p[1], 'bo', markersize=5)
+            plt.plot(p[0], p[1], 'bo', markersize=4)
 
-    plt.axis([150, 200, 370, 400])
+    #plt.axis([185, 220, 434, 460])
+    #plt.axis([185, 230, 430, 460])
+    plt.axis([220, 264, 346, 376])
+    #plt.axis([227, 264, 346, 368])
     plt.gca().set_aspect('equal')
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig('snapshot.pdf', format='pdf')
 
 
 def plot_points(points):
@@ -279,7 +286,7 @@ def plot_frustrations(array_of_edges, points_with_z, points, l_z, L):
                 x2, y2 = points[p2]
                 if not (out_of_boundaries([x1, y1], L) or out_of_boundaries([x2, y2], L)):
                     no_of_frustrations += 1
-                plt.plot([x1, x2], [y1, y2], color='green', lw=1.5)
+                plt.plot([x1, x2], [y1, y2], color='purple', lw=1.5)
     print("no of frustrations outside dislocations:", no_of_frustrations)
 
 

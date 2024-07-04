@@ -32,7 +32,7 @@ def calculate_rotation_angel_averaging_on_all_sites(points, l_x, l_y, N):
         psimn_vec.append(np.abs(psi_n) * np.exp(1j * np.angle(psi_n)))
     psi_avg = np.mean(psimn_vec)
     orientation = np.imag(np.log(psi_avg)) / 4
-    return orientation
+    return orientation, NNgraph
 
 
 def calculate_rotation_angel_of_area(points, l_x, l_y, N):
@@ -169,10 +169,9 @@ def post_process_main(sim_name, file_number):
     points_with_z = utils.read_points_from_file(file_path=file_path)
     unwrapped_aligned_points_z = points_with_z[:, 2]
     points = np.delete(points_with_z, 2, axis=1)
-    correlation_functions.create_distance_histogram(points, [L,L] , a)
     assert points.shape == (N, 2)
     print("imported data and parameters")
-    global_theta = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
+    global_theta, NNgraph = calculate_rotation_angel_averaging_on_all_sites(points=points, l_x=L, l_y=L, N=N)
 
     wrapped_points_with_z = utils.wrap_boundaries(points_with_z, [L, L], int(L/50))
     wrapped_points = np.delete(wrapped_points_with_z, 2, axis=1)
@@ -181,25 +180,33 @@ def post_process_main(sim_name, file_number):
     aligned_points = align_points(wrapped_points, L, L, N, points, global_theta)
     print("rotated points")
     print("theta=", global_theta)
+    # correlation_functions.create_distance_histogram(aligned_points, [L,L] , a, NNgraph)
     aligned_points_with_z = np.column_stack((aligned_points, wrapped_points_z))
     unwrapped_aligned_points = utils.rotate_points_by_angle(points, global_theta)
     unwrapped_aligned_points_with_z = np.column_stack((unwrapped_aligned_points, unwrapped_aligned_points_z))
 
     Burger_vecs, list_of_edges, is_point_in_dislocation = burger_field_calculation.Burger_field_calculation(points=aligned_points, a=a, order=1)
     print("no of total edges:", len(list_of_edges))
-    proximity_dist = mn_dst_pairing.make_pairs_distances_list(Burger_vecs)
-    #Burgers_field_second_iteration(aligned_points, a, 1, Burger_vecs)
+
+    # proximity_dist = mn_dst_pairing.make_pairs_distances_list(Burger_vecs, L)
+    # print(proximity_dist)
+    # Burgers_field_second_iteration(aligned_points, a, 1, Burger_vecs)
+
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, no_diagonal=True, line_style='--')
+
     optimized_Burgers_field, pairs_connecting_lines, Burgers_parameters = Burger_field_optimization.Burger_vec_optimization(aligned_points, list_of_edges, Burger_vecs, a, [L, L], global_theta)
     connectivity_parameters, AF_order_parameter = connectivity_Bipartiteness_AFism.connectivity_Bipartiteness_AFism(list_of_edges, unwrapped_aligned_points_with_z, [L, L], global_theta, l_z)
     parameters = list(connectivity_parameters) + list(Burgers_parameters)
 
-    utils.plot_boundaries([L, L], global_theta)
-    utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], False)
-    # utils.plot(points=aligned_points, edges_with_colors=list_of_edges, no_diagonal=True)
-    # utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
-    # utils.plot_colored_points(aligned_points_with_z,l_z)
-    plt.axis([130, 200, 360, 410])
-    plt.gca().set_aspect('equal')
+    # utils.plot_boundaries([L, L], global_theta)
+    utils.plot_burger_field(optimized_Burgers_field, pairs_connecting_lines, [L, L], True)
+    utils.plot(points=aligned_points, edges_with_colors=list_of_edges, no_diagonal=True, line_style='solid')
+    utils.plot_frustrations(list_of_edges, aligned_points_with_z, aligned_points, l_z, L)
+    utils.plot_colored_points(aligned_points_with_z, l_z)
+
+    #plt.axis([130, 200, 360, 410])
+    #plt.gca().set_aspect('equal')
+
     plt.show()
 
     row = [file_number] + list(parameters)
@@ -216,3 +223,4 @@ if __name__ == "__main__":
     post_process_main('N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '90167817')
 
  # 'N=90000_h=0.8_rhoH=0.81_AF_square_ECMC', '7484757'
+ # 'N=90000_h=0.8_rhoH=0.775_AF_square_ECMC', '28391483'

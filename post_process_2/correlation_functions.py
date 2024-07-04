@@ -4,30 +4,37 @@ from matplotlib import pyplot as plt
 from post_process_2 import utils
 from collections import Counter
 from scipy.spatial import distance_matrix
+import random
 
 
-def create_distance_histogram(points, boundaries, a):
+def create_distance_histogram(points, boundaries, a, NNgraph):
     print("calculating correlations")
     N = len(points)
     lx, ly = boundaries[0], boundaries[1]
-    # r_vec = []
-    # dist = []
     k = [2*np.pi/a, 0]
+    res = random.sample(range(0, N), 1000)
     bins = create_bins(0, np.sqrt(lx ** 2 + ly ** 2) / 2, 0.1)
     r_axis = r_axis_calc(bins)
     pos_corr = [0]*len(r_axis)
-    distances = distance_matrix(points, points)
-    for i in range(N):
-        print(i)
-        for j in range(N):
+    p=0
+    for i in res:
+        print(p)
+        p+=1
+        for j in res:
             if i == j:
                 continue
             else:
                 r_vec = utils.cyclic_vec(boundaries, points[i], points[j])
-                dist = distances[i][j]
-                pair_correlation = np.cos(np.dot(k, r_vec))/(np.pi*dist)
+                dist = utils.cyc_dist(points[i], points[j], boundaries)
+                pair_correlation = np.cos(np.dot(k, r_vec))/(2*np.pi*dist)
+                #orientatinal_correlation = orientational_correlation_calculation(NNgraph,r_vec,dist,points,i,j)
                 fill_histogram(dist, pair_correlation, bins, pos_corr)
-    plt.plot(r_axis, pos_corr)
+    # plt.xscale("log")
+    # plt.yscale("log")
+    for i in range(len(pos_corr)):
+        abs_corr = abs(pos_corr[i])
+    plt.plot(r_axis, abs_corr)
+    plt.show()
 
 
 def create_bins(lower_bound, upper_bound, width):
@@ -71,6 +78,9 @@ def r_axis_calc(bins):
     for i in range(len(bins)):
         r[i] = (bins[i][0] + bins[i][1])/2
     return r
+
+def orientational_correlation_calculation(NN_graph,r_vec,dist,points,i,j):
+    pass
 
 
 def positional_correlation_calculation(distance_histogram, dist, r_vec, k, r_axis):
